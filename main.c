@@ -56,7 +56,38 @@ int extract(char* path){ // PROF FUNCTION
 }
 
 
+// *** Header test ***
 
+// test empty
+
+// test not ASCII
+
+// test cut in the middle
+
+// test to short 
+
+// test not correct format
+
+
+
+// *** TIME ***
+
+// full dans le passé
+
+// dans le future
+
+// impossible date
+
+//
+
+
+
+
+void remove_files() {
+
+    // dunno yet which files to remove
+
+}
 
 
 void fuzz(char* path){
@@ -71,6 +102,8 @@ void fuzz(char* path){
 
     //printf("Ratio : %d\n", );
     
+
+    remove_files();
 }
 
 
