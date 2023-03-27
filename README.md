@@ -27,3 +27,4 @@ just use `make` lol
 - probably split every header part into a different file (AKA clean code my G)
 - maybe split files more accordingly
 - makefile : pas oublier le '-o3' quand on aura fini 
+- trouver un soft pour faire des comments automatiques en C
