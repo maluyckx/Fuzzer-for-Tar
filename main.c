@@ -5,10 +5,6 @@
 #include "constants.h"
 
 
-
-
-
-
 /**
  * Launches another executable given as argument,
  * parses its output and check whether or not it matches "*** The program has crashed ***".
@@ -67,6 +63,13 @@ int extract(char* path){ // PROF FUNCTION
 // test to short 
 
 // test not correct format
+// remove null terminators for name, linkname, magic, uname and gname
+
+// fake uid/guid
+
+// bad checksum
+
+// linkname not leading anywhere
 
 
 
@@ -78,7 +81,10 @@ int extract(char* path){ // PROF FUNCTION
 
 // impossible date
 
-//
+
+// end-of-file marker
+// 2x 512 bytes filled with 0s should be present but not mandatory
+// should issue a warning if not found
 
 
 
