@@ -1,3 +1,7 @@
+# Project specific
+fuzzer
+*.tar
+
 # Prerequisites
 *.d
 
