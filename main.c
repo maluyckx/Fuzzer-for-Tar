@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,6 +81,22 @@ void fuzzing_on_precise_field(char* path, char* field_name) {
     // should issue a warning if not found
 }
 
+void remove_null_terminators(char* path, char* field_name) { 
+    size_t size = sizeof(field_name);
+
+    // find first terminator:
+    size_t first_term = size;
+    for (size_t i=0; i<size; i++) {
+        if (field_name[i] == '\0') {
+            first_term = i;
+            break;
+        }
+    }
+
+    memset(field_name+first_term, ' ', size - first_term); // replace '\0' by ' '
+    create_empty_tar(&header);
+    extract(path);
+}
 
 
 
