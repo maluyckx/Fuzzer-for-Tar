@@ -60,10 +60,11 @@ typedef struct tar_header{        /* byte offset */
 #define TOWRITE  00002          /* write by other */
 #define TOEXEC   00001          /* execute/search by other */
 
-// OUR CONST
+// OUR CONST (je pourrais les mettre short mais flemme de faire des conversions)
 
-short number_of_try = 0; // global variable
-short number_of_success = 0; // global variable
+static int number_of_try = 0; // global variable
+static int number_of_success = 0; // global variable
 
+static int number_of_tar_created = 0; // global variable
 
 #endif

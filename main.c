@@ -2,74 +2,49 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constants.h"
+#include "utils.h"
 
 
-/**
- * Launches another executable given as argument,
- * parses its output and check whether or not it matches "*** The program has crashed ***".
- * @param the path to the executable
- * @return -1 if the executable cannot be launched,
- *          0 if it is launched but does not print "*** The program has crashed ***",
- *          1 if it is launched and prints "*** The program has crashed ***".
- *
- * BONUS (for fun, no additional marks) without modifying this code,
- * compile it and use the executable to restart our computer.
- */
-int extract(char* path){ // PROF FUNCTION
-    // Comments de Marco : la partie ici en dessous, on va 100% devoir la mettre dans une fonction vue qu'on va l'apl à chaque fin de test
-    int rv = 0;
-    char cmd[51];
-    strncpy(cmd, path, 25);
-    cmd[26] = '\0';
-    strncat(cmd, " archive.tar", 25);
-    char buf[33];
-    FILE *fp;
 
-    if ((fp = popen(cmd, "r")) == NULL) {
-        printf("Error opening pipe!\n");
-        return -1;
-    }
 
-    if(fgets(buf, 33, fp) == NULL) {
-        printf("No output\n");
-        goto finally;
-    }
-    if(strncmp(buf, "*** The program has crashed ***\n", 33)) {
-        printf("Not the crash message\n");
-        goto finally;
-    } else {
-        printf("Crash message\n");
-        rv = 1;
-        goto finally;
-    }
-    finally:
-    if(pclose(fp) == -1) {
-        printf("Command not found\n");
-        rv = -1;
-    }
-    return rv;
-}
+
 
 
 // *** Header test ***
+void trying_to_fuck_up_the_header(char* path, tar_header header) {
 
-// test empty
+    start_header(&header);
+    print_header(&header);
 
-// test not ASCII
 
-// test cut in the middle
+    
+    extract(path);
 
-// test to short 
 
-// test not correct format
-// remove null terminators for name, linkname, magic, uname and gname
+    // test empty
 
-// fake uid/guid
+    // test not ASCII
 
-// bad checksum
+    // test cut in the middle
 
-// linkname not leading anywhere
+    // test to short 
+
+    // test not correct format
+    // remove null terminators for name, linkname, magic, uname and gname
+
+    // fake uid/guid
+
+    // bad checksum
+
+    // linkname not leading anywhere
+
+
+
+}
+
+
+
+
 
 
 
@@ -97,7 +72,11 @@ void remove_files() {
 
 
 void fuzz(char* path){
-    printf("Path : %s", path);
+    printf("Path : %s\n", path);
+
+    tar_header header;
+
+    trying_to_fuck_up_the_header(path, header);
 
     // all the functions to test each headers
     // in each function, test extraction at the end 

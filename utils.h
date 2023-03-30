@@ -4,8 +4,14 @@
 #include "constants.h"
 
 
+// for all the functions that we will use on the header, content and end of the tar
+void print_header(tar_header* header);
+
 unsigned int calculate_checksum(tar_header* entry);
 
-// for all the functions that we will use on the header, content and end of the tar
+
+int extract(char* path);
+
+void start_header(tar_header* header);
 
 #endif
