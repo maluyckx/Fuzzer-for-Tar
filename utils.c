@@ -141,7 +141,8 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
 
 
 void create_empty_tar(tar_header* header) { // also maybe need checksum at some point
-
+    
+    calculate_checksum(header);
     char end_bytes[END_BYTES];
     memset(end_bytes, 0, END_BYTES);
 
