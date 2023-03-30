@@ -46,6 +46,9 @@ unsigned int calculate_checksum(struct tar_header* entry){
  */
 int extract(char* path){ // PROF FUNCTION
     // Comments de Marco : la partie ici en dessous, on va 100% devoir la mettre dans une fonction vue qu'on va l'apl à chaque fin de test
+
+    number_of_try++;
+    
     int rv = 0;
     char cmd[51];
     strncpy(cmd, path, 25);
@@ -69,8 +72,8 @@ int extract(char* path){ // PROF FUNCTION
     } else {
         printf("Crash message\n");
         rv = 1;
-        // TODO MARCO : need to success++ here
-
+        // TODO MARCO : need to  keep the archive somewhere
+        number_of_success++;
         
         goto finally;
     }
@@ -114,25 +117,62 @@ void start_header(struct tar_header* header) {
     calculate_checksum(header);
 }
 
+
+void change_size(tar_header* header, size_t size) {
+    snprintf(header->size, 12, "%011o", size); // Octal representation of the number with 0 as prefix : https://linux.die.net/man/3/snprintf
+}
+
+
+void change_header_field(char* header_field, char* new_value, size_t size) { // might not be needed but it is wayyyyy prettier
+    strncpy(header_field, new_value, size);
+}
+
+
+void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) { // maybe need checksum at some point
+
+    FILE *fp;
+    
+    fp = fopen("archive.tar", "wb");
+    fwrite(header, sizeof(tar_header), 1, fp);
+    fwrite(content, content_size, 1, fp);
+    fwrite(end_bytes_buffer, end_size, 1, fp);
+    fclose(fp);
+}
+
+
+void create_empty_tar(tar_header* header) { // also maybe need checksum at some point
+
+    char end_bytes[END_BYTES];
+    memset(end_bytes, 0, END_BYTES);
+
+    create_tar(header, "", 0, end_bytes, END_BYTES);
+}
+
+
+
+
 // DEBUG 
 
-void print_header(tar_header* header) {
-    printf("Name: %s\n", header->name);
-    printf("Mode: %s\n", header->mode);
-    printf("UID: %s\n", header->uid);
-    printf("GID: %s\n", header->gid);
-    printf("Size: %s\n", header->size);
-    printf("Mtime: %s\n", header->mtime);
-    printf("Chksum: %s\n", header->chksum);
-    printf("Typeflag: %c\n", header->typeflag);
-    printf("Linkname: %s\n", header->linkname);
-    printf("Magic: %s\n", header->magic);
-    printf("Version: %s\n", header->version);
-    printf("Uname: %s\n", header->uname);
-    printf("Gname: %s\n", header->gname);
-    printf("Devmajor: %s\n", header->devmajor);
-    printf("Devminor: %s\n", header->devminor);
-    printf("Prefix: %s\n", header->prefix);
-    printf("Padding: %s\n", header->padding);
+void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à faire cet affichage débile)
+    printf("Name:      %s\n", header->name);
+    printf("Mode:      %s\n", header->mode);
+    printf("UID:       %s\n", header->uid);
+    printf("GID:       %s\n", header->gid);
+    printf("Size:      %s\n", header->size);
+    printf("Mtime:     %s\n", header->mtime);
+    printf("Chksum:    %s\n", header->chksum);
+    printf("Typeflag:  %c\n", header->typeflag);
+    printf("Linkname:  %s\n", header->linkname);
+    printf("Magic:     %s\n", header->magic);
+    printf("Version:   %s\n", header->version);
+    printf("Uname:     %s\n", header->uname);
+    printf("Gname:     %s\n", header->gname);
+    printf("Devmajor:  %s\n", header->devmajor);
+    printf("Devminor:  %s\n", header->devminor);
+    printf("Prefix:    %s\n", header->prefix);
+    printf("Padding:   %s\n", header->padding);
 }
+
+
+
 

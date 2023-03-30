@@ -4,6 +4,12 @@
 
 We need to write a generation-based fuzzer for the tar extractor. The fuzzer should automatically generate input files and check whether the extractor crashes. Input files that succesfully crash the extractor are kept by the fuzzer.
 
+The program is shaped as follows : 
+
+We are fuzzing on each part of the header by trying different approaches like not using ASCII character, leaving that part empty, etc. This function is called "fuzzing_on_precise_field" and is kind of the general fuzzing part of the project.
+
+There are also specialized functions to fuzz on specific part like (no idea for now but we will need them for sure).
+
 After running the program, there will be a small summary in this form : 
 ```
 Number of tries     : X
