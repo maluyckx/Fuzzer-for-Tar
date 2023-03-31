@@ -129,7 +129,7 @@ void start_header(struct tar_header* header) {
 
 
 void change_size(tar_header* header, size_t size) {
-    snprintf(header->size, sizeof(header->size), "%011o", size); // Octal representation of the number with 0 as prefix : https://linux.die.net/man/3/snprintf
+    snprintf(header->size, sizeof(header->size), "%011lo", size); // Octal representation of the number with 0 as prefix : https://linux.die.net/man/3/snprintf
 }
 
 
