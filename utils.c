@@ -20,7 +20,7 @@ unsigned int calculate_checksum(struct tar_header* entry){
     // sum of entire metadata
     unsigned int check = 0;
     unsigned char* raw = (unsigned char*) entry;
-    for(int i = 0; i < 512; i++){
+    for(int i = 0; i < HEADER_LENGTH; i++){
         check += raw[i];
     }
 
@@ -72,9 +72,19 @@ int extract(char* path){ // PROF FUNCTION
     } else {
         printf("Crash message\n");
         rv = 1;
-        // TODO MARCO : need to  keep the archive somewhere
         number_of_success++;
         
+        // TODO MARCO : need to  keep the archive somewhere => keeping_directory in the main function
+        // move the file from the fuzzing_directory to the keeping_directory 
+
+        //int result = rename("fuzzing_directory/archive.tar", );
+        int result = 0; // dummy for the moment
+        if (result == 0) {
+            printf("File moved successfully!\n");
+        } else {
+            printf("Failed to move file.\n");
+        }
+
         goto finally;
     }
     finally:
@@ -93,14 +103,14 @@ void start_header(struct tar_header* header) {
     memset(header, 0, sizeof(tar_header));
 
     char archive_number[64]; // bold assumption
-    snprintf(archive_number, 64, "archive_%d.txt", number_of_tar_created++);
+    snprintf(archive_number, 64, "fuzzing_directory/archive_%d.txt", number_of_tar_created);
     number_of_tar_created++;
 
     sprintf(header->name, "%s", archive_number); // TODO MARCO : hacky fix, needs to find better
     sprintf(header->mode, "0007777"); // all permissions
     sprintf(header->uid, "0000000");
     sprintf(header->gid, "0000000");
-    snprintf(header->size, 12, "%011o", 0); // error non octal value checksum : i guess the size needs to be in octal
+    snprintf(header->size, sizeof(header->size), "%011o", 0); // error non octal value checksum : i guess the size needs to be in octal
     sprintf(header->mtime, "1680171080"); // today's unix date
     //checksum at the end
     header->typeflag = REGTYPE;
@@ -119,7 +129,7 @@ void start_header(struct tar_header* header) {
 
 
 void change_size(tar_header* header, size_t size) {
-    snprintf(header->size, 12, "%011o", size); // Octal representation of the number with 0 as prefix : https://linux.die.net/man/3/snprintf
+    snprintf(header->size, sizeof(header->size), "%011o", size); // Octal representation of the number with 0 as prefix : https://linux.die.net/man/3/snprintf
 }
 
 
@@ -151,7 +161,6 @@ void create_empty_tar(tar_header* header) { // also maybe need checksum at some 
 
 
 
-
 // DEBUG 
 
 void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à faire cet affichage débile)
@@ -173,7 +182,4 @@ void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à 
     printf("Prefix:    %s\n", header->prefix);
     printf("Padding:   %s\n", header->padding);
 }
-
-
-
 

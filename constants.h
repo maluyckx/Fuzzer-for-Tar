@@ -62,6 +62,8 @@ typedef struct tar_header{        /* byte offset */
 
 // OUR CONST (je pourrais les mettre short mais flemme de faire des conversions)
 
+#define HEADER_LENGTH 512
+
 #define END_BYTES 1024
 
 static int number_of_try = 0; // global variable

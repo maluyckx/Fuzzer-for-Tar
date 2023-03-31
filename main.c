@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "utils.h"
 
@@ -65,11 +66,40 @@ void fuzzing_on_precise_field(char* path, char* field_name) {
     create_empty_tar(&header);
     extract(path);
 
+    
+    // #### check \0 (Part 1) // TODO MARCO : encore des tests à faire ici
+    start_header(&header);
+    //print_header(&header);
+    memset(field_name, 0, size);
+    create_empty_tar(&header);
+    extract(path);
+
+    // #### check \0 (Part 2)
+    start_header(&header);
+    //print_header(&header);
+    memset(field_name, 0, size);
+    memset(field_name, '0', size / 2);;
+    create_empty_tar(&header);
+    extract(path);
+
+    // #### check \0 (Part 3)
+    start_header(&header);
+    //print_header(&header);
+    memset(field_name, '0', size - 1);
+    field_name[size - 1] = 0;
+    create_empty_tar(&header);
+    extract(path);
+
+    // #### check \0 (Part 4)
+    start_header(&header);
+    //print_header(&header);
+    memset(field_name, 0, size - 1);
+    field_name[size - 1] = '0';
+    create_empty_tar(&header);
+    extract(path);
 
 
     // TODO
-    
-    // check \0 (probably several tests to do for this one)
 
     // modify order or placement of header parts
 
@@ -139,9 +169,46 @@ void mtime_fuzzing(char* path){
 
     printf("\n ##### WE FUZZING THE MTIME HEADER MA BOIIIIIIIIIIIIIII ##### \n");
 
-    // *** TIME ***
-    // full dans le passé
+    //fuzzing_on_precise_field(path, header.mtime);
 
+    char time_to_try[sizeof(header.mtime)];
+
+    time_t now = time(NULL); // get current time 
+    printf("Seconds : %d\n", now);
+
+    // impossible date du passé (avant 1970)
+    start_header(&header);
+    //print_header(&header);
+    snprintf(time_to_try, sizeof(header.mtime), "%o", -300); // 5 mins AVANT 1970
+    change_header_field(header.mtime, sizeof(header.mtime), time_to_try);
+    create_empty_tar(&header);
+    extract(path);
+
+    // full dans le passé  (5 mins in 1970)
+    start_header(&header);
+    //print_header(&header);
+    snprintf(time_to_try, sizeof(header.mtime), "%o", 300); // 5 mins in 1970
+    change_header_field(header.mtime, sizeof(header.mtime), time_to_try);
+    create_empty_tar(&header);
+    extract(path);
+
+    // dans le passé mais pas si full que ça (1 mois)
+    start_header(&header);
+    //print_header(&header);
+    snprintf(time_to_try, sizeof(header.mtime), "%o", now - 2629746); // il y a un mois
+    change_header_field(header.mtime, sizeof(header.mtime), time_to_try);
+    create_empty_tar(&header);
+    extract(path);
+
+    // maintenant
+    start_header(&header);
+    //print_header(&header);
+    snprintf(time_to_try, sizeof(header.mtime), "%o", now);
+    change_header_field(header.mtime, sizeof(header.mtime), time_to_try);
+    create_empty_tar(&header);
+    extract(path);
+
+    // TODO marco mais jdois aller à LLV là
     // dans le future
 
     // impossible date
@@ -217,9 +284,25 @@ void end_of_file(char* path) {
 
         // With file content 
         // Define size of content
-        snprintf(header.size, 12, "%011o", content_size); // octal value for the checksum : crash without it, no fucking idea why (TODO : make it a function since it is the second time i used it)
+        change_size(header.size, content_size);
+        //snprintf(header.size, 12, "%011o", content_size); // octal value for the checksum : crash without it, no fucking idea why (TODO : make it a function since it is the second time i used it)
         create_tar(&header, content, content_size, end_bytes, end_lengths[i]);
         extract(path);
+    }
+}
+
+
+void create_directory(const char *path) {
+
+    char command[500];
+    snprintf(command, sizeof(command), "mkdir %s", path);
+    int result = system(command);
+    
+    if (result == 0) {
+        printf("Directory created successfully!\n");
+    } else {
+        printf("Failed to create directory.\n");
+        exit(0);
     }
 }
 
@@ -228,30 +311,34 @@ void remove_files() {
 
     // dunno yet which files to remove
 
+    //system("rm archive.tar");
+    //system("rm -r fuzzing_directory/");
 }
 
 
 void fuzz(char* path){
     printf("Path : %s\n", path); // can a variable become const during the running phase ?????
 
+    // create_directory("fuzzing_directory/");
+    // create_directory("keeping_directory/"); // we won't remove this one, he will be use to keep the files that make tar crash
 
-    // absolument dégeulasse mais je sais plus comment const une variable du running phase
-    name_fuzzing(path);
-    mode_fuzzing(path);
-    uid_fuzzing(path);
-    gid_fuzzing(path);
-    size_fuzzing(path);
+    // // absolument dégeulasse mais je sais plus comment const une variable du running phase
+    // name_fuzzing(path);
+    // mode_fuzzing(path);
+    // uid_fuzzing(path);
+    // gid_fuzzing(path);
+    // size_fuzzing(path);
     mtime_fuzzing(path);
-    chksum_fuzzing(path);
-    typeflag_fuzzing(path);
-    linkname_fuzzing(path);
-    magic_fuzzing(path);
-    version_fuzzing(path);
-    uname_fuzzing(path);
-    gname_fuzzing(path);
+    // chksum_fuzzing(path);
+    // typeflag_fuzzing(path);
+    // linkname_fuzzing(path);
+    // magic_fuzzing(path);
+    // version_fuzzing(path);
+    // uname_fuzzing(path);
+    // gname_fuzzing(path);
 
 
-    end_of_file(path);
+    // end_of_file(path);
 
     // all the functions to test each headers
     // in each function, test extraction at the end 
