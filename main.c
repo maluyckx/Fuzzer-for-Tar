@@ -54,7 +54,6 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     // Test 7 : Field not terminated by null byte
     start_header(&header);
-    //print_header(&header);
     memset(field_name, '5', field_size);
     create_empty_tar(&header);
     extract(path_file);
@@ -69,7 +68,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // Test 9 : Null byte in the middle of the field (Part 2)
     start_header(&header);
     memset(field_name, 0, field_size);
-    memset(field_name, '0', field_size / 2);;
+    memset(field_name, '0', field_size / 2);
     create_empty_tar(&header);
     extract(path_file);
 
@@ -132,7 +131,6 @@ void name_fuzzing(){
 
     fuzzing_on_precise_field(header.name, sizeof(header.name));
 
-    // remove null terminators for name
 
     printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -140,7 +138,21 @@ void name_fuzzing(){
 void mode_fuzzing(){
 
     printf("\n~~~ MODE Header Fuzzing ~~~\n");
+    int modes[] = {TSUID, TSGID, TSVTX, TUREAD, TUWRITE, TUEXEC, TGREAD, TGWRITE, TGEXEC, TOREAD, TOWRITE, TOEXEC}; // from constants.h
 
+    fuzzing_on_precise_field(header.mode, sizeof(header.mode));
+
+    // fuzzing all possibles mode
+    for (int i = 0; i < (int) sizeof(modes); i++){
+        char mode[sizeof(header.mode)];
+        start_header(&header);
+        snprintf(mode, sizeof(header.mode), "%07o", modes[i]); // TODO : verify why %070
+        change_header_field(header.mode, mode, sizeof(header.mode));
+        create_empty_tar(&header);
+        extract(path_file);
+    }
+
+    // TODO : maybe try other values ?
 
     printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
@@ -150,7 +162,7 @@ void uid_fuzzing(){
 
     printf("\n~~~ UID Header Fuzzing ~~~\n");
 
-    // fake uid
+    fuzzing_on_precise_field(header.uid, sizeof(header.uid));
 
     printf("\n~~~ UID Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
@@ -160,7 +172,7 @@ void gid_fuzzing(){
     
     printf("\n~~~ GID Header Fuzzing ~~~\n");
 
-    // fake guid
+    fuzzing_on_precise_field(header.gid, sizeof(header.gid));
 
     printf("\n~~~ GID Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -169,6 +181,10 @@ void size_fuzzing(){
 
     printf("\n~~~ SIZE Header Fuzzing ~~~\n");
 
+
+    fuzzing_on_precise_field(header.size, sizeof(header.size));
+
+    // TODO : i have no idea for the moment
 
     printf("\n~~~ SIZE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -218,7 +234,7 @@ void mtime_fuzzing(){
     create_empty_tar(&header);
     extract(path_file);
 
-    // // Test with the maximum value for an int : TODO check if int or long int or long long int
+    // Test with the maximum value for an int : TODO check if int or long int or long long int
     start_header(&header);
     snprintf(time_to_try, sizeof(header.mtime), "%lo", now + __INT_MAX__); // maximum value for int
     change_header_field(header.mtime, time_to_try, sizeof(header.mtime));
@@ -236,7 +252,7 @@ void chksum_fuzzing(){
 
     fuzzing_on_precise_field(header.chksum, sizeof(header.chksum));
 
-    // TODO : bad checksum
+    // TODO : need other idea
     printf("\n~~~ CHECKSUM Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
@@ -244,6 +260,7 @@ void typeflag_fuzzing(){
 
     printf("\n~~~ TYPEFLAG Header Fuzzing ~~~\n");
 
+    // TODO : Single char element : BRUTE-FORCE GO BRRRRRRRRRRRRRRRRRRRRRRRRR
 
     printf("\n~~~ TYPEFLAG Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -251,8 +268,8 @@ void typeflag_fuzzing(){
 void linkname_fuzzing(){
     printf("\n~~~ LINKNAME Header Fuzzing ~~~\n");
 
-    // remove null terminators for linkname
-    // linkname not leading anywhere
+    fuzzing_on_precise_field(header.linkname, sizeof(header.linkname));
+    // TODO : linkname not leading anywhere. Comments of Marco from the future : I have absolutely no idea what I meant there.
     printf("\n~~~ LINKNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
@@ -260,8 +277,8 @@ void magic_fuzzing(){
 
     printf("\n~~~ MAGIC Header Fuzzing ~~~\n");
 
+    fuzzing_on_precise_field(header.magic, sizeof(header.magic));
 
-    // remove null terminators for magic
     printf("\n~~~ MAGIC Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
@@ -269,7 +286,10 @@ void version_fuzzing(){
 
     printf("\n~~~ VERSION Header Fuzzing ~~~\n");
 
+    fuzzing_on_precise_field(header.version, sizeof(header.version));
+
     // only 2 bits, so we can go BRRRRRRRRRRRR and brute-force every value 
+    // TODO : it is octal only I think tho
 
     printf("\n~~~ VERSION Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -278,6 +298,9 @@ void uname_fuzzing(){
 
     printf("\n~~~ UNAME Header Fuzzing ~~~\n");
 
+    fuzzing_on_precise_field(header.uname, sizeof(header.uname));
+
+    // TODO : need other idea
 
     printf("\n~~~ UNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 
@@ -287,7 +310,9 @@ void gname_fuzzing(){
 
     printf("\n~~~ GNAME Header Fuzzing ~~~\n");
 
-    // remove null terminators for gname
+    fuzzing_on_precise_field(header.gname, sizeof(header.gname));
+
+    // TODO : need other idea
 
     printf("\n~~~ GNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
@@ -321,53 +346,35 @@ void end_of_file() {
 }
 
 
-void create_directory(const char *path_file) {
-
-    char command[500];
-    snprintf(command, sizeof(command), "mkdir %s", path_file);
-    int result = system(command);
-    
-    if (result == 0) {
-        printf("Directory created successfully!\n");
-    } else {
-        printf("Failed to create directory.\n");
-        exit(0);
-    }
-}
-
-
 void remove_files() {
 
     // dunno yet which files to remove
 
-    //system("rm archive.tar");
-    //system("rm -r fuzzing_directory/");
+    //system("rm -f archive.tar");
+    //system("rm -r *.txt");
 }
 
 
 void fuzz(){
     printf("path_file : %s\n", path_file); // can a variable become const during the running phase ?????
 
-    // create_directory("fuzzing_directory/");
-    // create_directory("keeping_directory/"); // we won't remove this one, he will be use to keep the files that make tar crash
-
     // // absolument dégeulasse mais je sais plus comment const une variable du running phase
     name_fuzzing();
-    // mode_fuzzing(path_file);
-    // uid_fuzzing(path_file);
-    // gid_fuzzing(path_file);
-    // field_size_fuzzing(path_file);
-    // mtime_fuzzing(path_file);
-    // chksum_fuzzing(path_file);
-    // typeflag_fuzzing(path_file);
-    // linkname_fuzzing(path_file);
-    // magic_fuzzing(path_file);
-    // version_fuzzing(path_file);
-    // uname_fuzzing(path_file);
-    // gname_fuzzing(path_file);
+    // mode_fuzzing();
+    // uid_fuzzing();
+    // gid_fuzzing();
+    // field_size_fuzzing();
+    // mtime_fuzzing();
+    // chksum_fuzzing();
+    // typeflag_fuzzing();
+    // linkname_fuzzing();
+    // magic_fuzzing();
+    // version_fuzzing();
+    // uname_fuzzing();
+    // gname_fuzzing();
 
 
-    // end_of_file(path_file);
+    // end_of_file();
 
     // all the functions to test each headers
     // in each function, test extraction at the end 
@@ -376,9 +383,6 @@ void fuzz(){
     printf("Number of tries     : %d\n", number_of_try);
     printf("Number of successes : %d\n", number_of_success);
 
-    //printf("Ratio : %d\n", );
-    
-
     remove_files();
 }
 
@@ -386,8 +390,9 @@ void fuzz(){
 
 int main(int argc, char* argv[]){
 
-    if (argc != 2) { // le prof avait mis argc < 2 mais imo c'est mieux !=
+    if (argc != 2) {
         printf("Invalid number of arguments.\n");
+        printf("This is a valid command : ./fuzzer <path to the tar extractor>");
         return -1;
     }
     path_file = argv[1];

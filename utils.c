@@ -74,11 +74,10 @@ int extract(char* path){ // PROF FUNCTION
         rv = 1;
         number_of_success++;
         
-        // TODO MARCO : need to  keep the archive somewhere => keeping_directory in the main function
-        // move the file from the fuzzing_directory to the keeping_directory 
-
-        //int result = rename("fuzzing_directory/archive.tar", );
-        int result = 0; // dummy for the moment
+        char success_name[200];
+        snprintf(success_name, 200, "success_%d.tar", number_of_success);
+        
+        int result = rename("archive.tar", success_name);
         if (result == 0) {
             printf("File moved successfully!\n");
         } else {
@@ -103,25 +102,25 @@ void start_header(struct tar_header* header) {
     memset(header, 0, sizeof(tar_header));
 
     char archive_number[64]; // bold assumption
-    snprintf(archive_number, 64, "fuzzing_directory/archive_%d.txt", number_of_tar_created);
+    snprintf(archive_number, 64, "archive_%d.txt", number_of_tar_created); // TODO : maybe .bin ?
     number_of_tar_created++;
 
-    sprintf(header->name, "%s", archive_number); // TODO MARCO : hacky fix, needs to find better
-    sprintf(header->mode, "0007777"); // all permissions
-    sprintf(header->uid, "0000000");
-    sprintf(header->gid, "0000000");
+    snprintf(header->name, sizeof(header->name), "%s", archive_number); // TODO MARCO : hacky fix, needs to find better
+    snprintf(header->mode, sizeof(header->mode), "0007777"); // all permissions
+    snprintf(header->uid, sizeof(header->uid), "0000000");
+    snprintf(header->gid, sizeof(header->gid), "0000000");
     snprintf(header->size, sizeof(header->size), "%011o", 0); // error non octal value checksum : i guess the size needs to be in octal
-    sprintf(header->mtime, "1680171080"); // today's unix date
+    snprintf(header->mtime, sizeof(header->mtime), "1680171080"); // today's unix date
     //checksum at the end
     header->typeflag = REGTYPE;
     header->linkname[0] = 0;
-    sprintf(header->magic, TMAGIC);
-    sprintf(header->version, TVERSION);
+    snprintf(header->magic, sizeof(header->magic), TMAGIC);
+    snprintf(header->version, sizeof(header->version), TVERSION); // TODO understand the warning and maybe fix it : ‘snprintf’ output 3 bytes into a destination of size 2
 
-    sprintf(header->uname, "root");
-    sprintf(header->gname, "root");
-    sprintf(header->devmajor, "0000000");
-    sprintf(header->devminor, "0000000");
+    snprintf(header->uname, sizeof(header->uname), "root");
+    snprintf(header->gname, sizeof(header->gname), "root");
+    snprintf(header->devmajor, sizeof(header->devmajor), "0000000");
+    snprintf(header->devminor, sizeof(header->devminor), "0000000");
     // might require padding at some point, not so sure tbh
 
     calculate_checksum(header);
@@ -182,4 +181,3 @@ void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à 
     printf("Prefix:    %s\n", header->prefix);
     printf("Padding:   %s\n", header->padding);
 }
-
