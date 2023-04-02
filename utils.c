@@ -6,8 +6,6 @@
 
 
 
-
-
 /**
  * Computes the checksum for a tar header and encode it on the header
  * @param entry: The tar header
@@ -45,11 +43,9 @@ unsigned int calculate_checksum(struct tar_header* entry){
  * compile it and use the executable to restart our computer.
  */
 int extract(char* path){ // PROF FUNCTION
-    // Comments de Marco : la partie ici en dessous, on va 100% devoir la mettre dans une fonction vue qu'on va l'apl à chaque fin de test
-
     number_of_try++;
     
-    int rv = 0;
+    int rv = 0; // return value
     char cmd[51];
     strncpy(cmd, path, 25);
     cmd[26] = '\0';
@@ -75,7 +71,7 @@ int extract(char* path){ // PROF FUNCTION
         number_of_success++;
         
         char success_name[200];
-        snprintf(success_name, 200, "success_%d.tar", number_of_success);
+        snprintf(success_name, sizeof(success_name), "success_%d.tar", number_of_success);
         
         int result = rename("archive.tar", success_name);
         if (result == 0) {
@@ -95,34 +91,30 @@ int extract(char* path){ // PROF FUNCTION
 }
 
 
-
-void start_header(struct tar_header* header) {
-
+void start_header(tar_header* header) { // TODO : maybe some constants here ?
     // Reset data of header
     memset(header, 0, sizeof(tar_header));
 
     char archive_number[64]; // bold assumption
-    snprintf(archive_number, 64, "archive_%d.txt", number_of_tar_created); // TODO : maybe .bin ?
-    number_of_tar_created++;
+    snprintf(archive_number, sizeof(archive_number), "archive_%d.txt", number_of_tar_created++); // TODO : maybe .bin ?
 
     snprintf(header->name, sizeof(header->name), "%s", archive_number); // TODO MARCO : hacky fix, needs to find better
     snprintf(header->mode, sizeof(header->mode), "0007777"); // all permissions
     snprintf(header->uid, sizeof(header->uid), "0000000");
     snprintf(header->gid, sizeof(header->gid), "0000000");
-    snprintf(header->size, sizeof(header->size), "%011o", 0); // error non octal value checksum : i guess the size needs to be in octal
-    snprintf(header->mtime, sizeof(header->mtime), "1680171080"); // today's unix date
+    snprintf(header->size, sizeof(header->size), "%011o", 0); // size needs to be in octal
+    snprintf(header->mtime, sizeof(header->mtime), "%011o", time(NULL)); // set modification time to current time in octal format
     //checksum at the end
     header->typeflag = REGTYPE;
     header->linkname[0] = 0;
-    snprintf(header->magic, sizeof(header->magic), TMAGIC);
-    snprintf(header->version, sizeof(header->version), TVERSION); // TODO understand the warning and maybe fix it : ‘snprintf’ output 3 bytes into a destination of size 2
-
+    snprintf(header->magic, sizeof(header->magic), "%s", TMAGIC); // might not need the "%s"
+    snprintf(header->version, sizeof(header->version), "%s", TVERSION); // might not need the "%s"
+    // TODO understand the warning and maybe fix it : ‘snprintf’ output 3 bytes into a destination of size 2
     snprintf(header->uname, sizeof(header->uname), "root");
     snprintf(header->gname, sizeof(header->gname), "root");
     snprintf(header->devmajor, sizeof(header->devmajor), "0000000");
     snprintf(header->devminor, sizeof(header->devminor), "0000000");
     // might require padding at some point, not so sure tbh
-
     calculate_checksum(header);
 }
 
@@ -137,17 +129,37 @@ void change_header_field(char* header_field, char* new_value, size_t size) { // 
 }
 
 
+
 void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) { // maybe need checksum at some point
+    FILE *fp = fopen("archive.tar", "wb");
+    if (fp == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
 
-    FILE *fp;
-    
-    fp = fopen("archive.tar", "wb");
-    fwrite(header, sizeof(tar_header), 1, fp);
-    fwrite(content, content_size, 1, fp);
-    fwrite(end_bytes_buffer, end_size, 1, fp);
-    fclose(fp);
+    if (fwrite(header, sizeof(tar_header), 1, fp) != 1) {
+        perror("Error writing header");
+        fclose(fp);
+        exit(EXIT_FAILURE);
+    }
+
+    if (fwrite(content, content_size, 1, fp) != 1) {
+        perror("Error writing content");
+        fclose(fp);
+        exit(EXIT_FAILURE);
+    }
+
+    if (fwrite(end_bytes_buffer, end_size, 1, fp) != 1) {
+        perror("Error writing end bytes");
+        fclose(fp);
+        exit(EXIT_FAILURE);
+    }
+
+    if (fclose(fp) != 0) {
+        perror("Error closing file");
+        exit(EXIT_FAILURE);
+    }
 }
-
 
 void create_empty_tar(tar_header* header) { // also maybe need checksum at some point
     
@@ -155,7 +167,7 @@ void create_empty_tar(tar_header* header) { // also maybe need checksum at some 
     char end_bytes[END_BYTES];
     memset(end_bytes, 0, END_BYTES);
 
-    create_tar(header, "", 0, end_bytes, END_BYTES);
+    create_tar(header, "", 0, end_bytes, END_BYTES); // TODO check if "" == NULL
 }
 
 

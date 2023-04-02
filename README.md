@@ -21,6 +21,8 @@ The functions in the file 'help.c' that was provided were split in different fil
 
 just use `make` lol
 
+then `./fuzzer <path to the tar extractor>`
+
 ## Useful links used
 - https://www.gnu.org/software/tar/manual/html_node/Standard.html
 -
@@ -34,3 +36,5 @@ just use `make` lol
 - maybe split files more accordingly
 - makefile : pas oublier le '-o3' quand on aura fini 
 - trouver un soft pour faire des comments automatiques en C
+- FIX LES PUTAINS DE WARNINGS SA MERE
+- need to check the checksum EACH time => do a function for that

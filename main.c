@@ -106,21 +106,31 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // should issue a warning if not found
 }
 
-void remove_null_terminators(char* field_name) { 
-    size_t field_size = sizeof(field_name);
+void remove_null_terminators(char* field_name, size_t field_size){
 
     // find first terminator:
     size_t first_term = field_size;
-    for (size_t i=0; i<field_size; i++) {
+    for (size_t i = 0; i < field_size; i++) {
         if (field_name[i] == '\0') {
             first_term = i;
             break;
         }
     }
 
-    memset(field_name+first_term, ' ', field_size - first_term); // replace '\0' by ' '
+    memset(field_name + first_term, ' ', field_size - first_term); // replace '\0' by ' '
     create_empty_tar(&header);
     extract(path_file);
+
+    // Comments from Marco : je t'avoue que j'ai pas trop capté ici, ca serait pas plus simple de faire ça ? Ou alors j'ai pas compris la function
+    /*
+    size_t first_term = strnlen(field_name, field_size);
+
+    if (first_term < field_size) {
+        memset(field_name + first_term, ' ', field_size - first_term); // replace '\0' by ' '
+    }
+    create_empty_tar(&header);
+    extract(path_file);
+    */
 }
 
 
@@ -152,7 +162,7 @@ void mode_fuzzing(){
         extract(path_file);
     }
 
-    // TODO : maybe try other values ?
+    // TODO : maybe try other values ? like every possible values scrambled
 
     printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
@@ -260,7 +270,16 @@ void typeflag_fuzzing(){
 
     printf("\n~~~ TYPEFLAG Header Fuzzing ~~~\n");
 
-    // TODO : Single char element : BRUTE-FORCE GO BRRRRRRRRRRRRRRRRRRRRRRRRR
+    // Single char element : BRUTE-FORCE GO BRRRRRRRRRRRRRRRRRRRRRRRRR
+
+    for (int i = 0; i < 256; i++){
+        start_header(&header);
+        header.typeflag = (char) i;
+        create_empty_tar(&header);
+        extract(path_file);
+    }
+
+    // TODO : maybe try with negative value ? or some shit
 
     printf("\n~~~ TYPEFLAG Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -288,8 +307,23 @@ void version_fuzzing(){
 
     fuzzing_on_precise_field(header.version, sizeof(header.version));
 
-    // only 2 bits, so we can go BRRRRRRRRRRRR and brute-force every value 
-    // TODO : it is octal only I think tho
+    // only 2 chars (so 2 bytes = 16 bits), so we can go BRRRRRRRRRRRR and brute-force every value 
+    // it is octal only I think tho
+    char octal[3] = {'0', '0', '\0'};
+        
+    for (int i = 0; i < 8; i++) {
+        octal[0] = i + '0';
+        for (int j = 0; j < 8; j++) {
+            octal[1] = j + '0';
+            
+            start_header(&header);
+            change_header_field(header.version, octal, sizeof(header.version));
+            create_empty_tar(&header);
+            extract(path_file);
+        }
+    }
+
+    // TODO : maybe try with negative value ? or some shit
 
     printf("\n~~~ VERSION Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -320,29 +354,31 @@ void gname_fuzzing(){
 
 void end_of_file() {
 
+    printf("\n~~~ End of File Fuzzing ~~~\n");
     // Define lengths to test
-    int end_lengths[] = {0, 1, END_BYTES / 2 , END_BYTES - 1, END_BYTES, END_BYTES + 1, END_BYTES * 2};
+    int end_sizes[] = {0, 1, END_BYTES / 2 , END_BYTES - 1, END_BYTES, END_BYTES + 1, END_BYTES * 2};
     // Define longest buffer of 0 possible
     char end_bytes[END_BYTES * 2];
     memset(end_bytes, 0, END_BYTES * 2);
     char content[] = "https://www.youtube.com/watch?v=xvFZjo5PgG0"; // dummy text
     size_t content_size = strlen(content);
 
-    for (int i = 0; i < (int) sizeof(end_lengths); i++){
+    for (int i = 0; i < (int) (sizeof(end_sizes) / sizeof(int)); i++){
 
-        start_header(&header);
         // Without file content
-        create_tar(&header, "", 0, end_bytes, end_lengths[i]);
+        start_header(&header);
+        create_tar(&header, "", 0, end_bytes, end_sizes[i]);
         extract(path_file);
-
 
         // With file content 
         // Define field_size of content
+        start_header(&header);
         change_size(&header, content_size);
-        //snprintf(header.field_size, 12, "%011o", content_field_size); // octal value for the checksum : crash without it, no fucking idea why (TODO : make it a function since it is the second time i used it)
-        create_tar(&header, content, content_size, end_bytes, end_lengths[i]);
+        // octal value for the checksum : crash without it, no fucking idea why (TODO : make it a function since it is the second time i used it)
+        create_tar(&header, content, content_size, end_bytes, end_sizes[i]);
         extract(path_file);
     }
+    printf("\n~~~ End of File Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 
@@ -356,9 +392,10 @@ void remove_files() {
 
 
 void fuzz(){
-    printf("path_file : %s\n", path_file); // can a variable become const during the running phase ?????
+    printf("path_file : %s\n", path_file); 
 
-    // // absolument dégeulasse mais je sais plus comment const une variable du running phase
+    // TODO : need to check the checksum each time I think
+
     name_fuzzing();
     // mode_fuzzing();
     // uid_fuzzing();
