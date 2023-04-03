@@ -391,7 +391,7 @@ void remove_files() {
     // dunno yet which files to remove
 
     system("rm -f archive.tar");
-    //system("rm -r *.txt");
+    system("rm -f *.txt");
 }
 
 
@@ -400,8 +400,8 @@ void fuzz(){
 
     // TODO : need to check the checksum each time I think
 
-    name_fuzzing();
-    // mode_fuzzing();
+    // name_fuzzing();
+    mode_fuzzing();
     // uid_fuzzing();
     // gid_fuzzing();
     // field_size_fuzzing();
