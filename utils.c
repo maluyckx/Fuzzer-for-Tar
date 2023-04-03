@@ -52,12 +52,11 @@ int extract(char* path){ // PROF FUNCTION
     strncat(cmd, " archive.tar", 25);
     char buf[33];
     FILE *fp;
-
     if ((fp = popen(cmd, "r")) == NULL) {
         printf("Error opening pipe!\n");
         return -1;
     }
-
+    printf("FP : %d\n", fp);
     if(fgets(buf, 33, fp) == NULL) {
         printf("No output\n");
         goto finally;
@@ -87,6 +86,7 @@ int extract(char* path){ // PROF FUNCTION
         printf("Command not found\n");
         rv = -1;
     }
+    printf("Return value : %d\n", rv);
     return rv;
 }
 
@@ -107,8 +107,8 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
     //checksum at the end
     header->typeflag = REGTYPE;
     header->linkname[0] = 0;
-    snprintf(header->magic, sizeof(header->magic), "%s", TMAGIC); // might not need the "%s"
-    snprintf(header->version, sizeof(header->version), "%s", TVERSION); // might not need the "%s"
+    snprintf(header->magic, sizeof(header->magic), TMAGIC); 
+    snprintf(header->version, sizeof(header->version) + 1,  TVERSION); //  '+ 1' NEEDED BECAUSE 'NO NULL' FUCK THIS SHIT
     // TODO understand the warning and maybe fix it : ‘snprintf’ output 3 bytes into a destination of size 2
     snprintf(header->uname, sizeof(header->uname), "root");
     snprintf(header->gname, sizeof(header->gname), "root");
@@ -125,7 +125,7 @@ void change_size(tar_header* header, size_t size) {
 
 
 void change_header_field(char* header_field, char* new_value, size_t size) { // might not be needed but it is wayyyyy prettier
-    strncpy(header_field, new_value, size);
+    strncpy(header_field, new_value, size); // seg fault here
 }
 
 
@@ -136,18 +136,19 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
-
+    
     if (fwrite(header, sizeof(tar_header), 1, fp) != 1) {
         perror("Error writing header");
         fclose(fp);
         exit(EXIT_FAILURE);
     }
-
-    if (fwrite(content, content_size, 1, fp) != 1) {
+    /*
+    if (fwrite(content, content_size, 1, fp) != 1) { // TODO : DOES NOT WORK HERE I DONT KNOW WHY
         perror("Error writing content");
         fclose(fp);
         exit(EXIT_FAILURE);
     }
+    */fwrite(content, content_size, 1, fp);
 
     if (fwrite(end_bytes_buffer, end_size, 1, fp) != 1) {
         perror("Error writing end bytes");
@@ -159,6 +160,13 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
         perror("Error closing file");
         exit(EXIT_FAILURE);
     }
+    
+   /*
+   printf("Header : %d\n", fwrite(header, sizeof(tar_header), 1, fp));
+   printf("Content : %d\n", fwrite(content, content_size, 1, fp));
+   printf("End : %d\n", fwrite(end_bytes_buffer, end_size, 1, fp));
+   fclose(fp);
+   */
 }
 
 void create_empty_tar(tar_header* header) { // also maybe need checksum at some point
@@ -175,6 +183,7 @@ void create_empty_tar(tar_header* header) { // also maybe need checksum at some 
 // DEBUG 
 
 void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à faire cet affichage débile)
+    printf("-----Header start-----\n");
     printf("Name:      %s\n", header->name);
     printf("Mode:      %s\n", header->mode);
     printf("UID:       %s\n", header->uid);
@@ -192,4 +201,5 @@ void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à 
     printf("Devminor:  %s\n", header->devminor);
     printf("Prefix:    %s\n", header->prefix);
     printf("Padding:   %s\n", header->padding);
+    printf("-----Header end-----\n");
 }

@@ -18,23 +18,28 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     // Test 1 : Empty field
     start_header(&header);
+    //print_header(&header);
     change_header_field(field_name, "", field_size);
     create_empty_tar(&header);
+    //print_header(&header);
     extract(path_file);
 
     // Test 2 : Non-ASCII field
+
+    char* not_ascii = 'Ω';
     start_header(&header);
-    change_header_field(field_name, 'Ω', field_size); // omega : is represented in Unicode by the code point U+03A9
+    change_header_field(field_name, &not_ascii, field_size); // omega : is represented in Unicode by the code point U+03A9
     create_empty_tar(&header);
     extract(path_file);
 
     // Test 3 : Non-numeric field
+    char non_numeric_field[] = "https://www.youtube.com/watch?v=oLsVrshvOaI";
     start_header(&header);
-    change_header_field(field_name, 'https://www.youtube.com/watch?v=oLsVrshvOaI', field_size); // warning is FINE : it is NORMAL that it is too long
+    change_header_field(field_name, &non_numeric_field, field_size); // warning is FINE : it is NORMAL that it is too long
     create_empty_tar(&header);
     extract(path_file);
 
-    // Test 4 : Too short field
+    // Test 4 : Too short field TODO
 
 
     // Test 5 : Not octal field
@@ -43,7 +48,6 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     field_name[field_size - 1] = 0;
     create_empty_tar(&header);
     extract(path_file);
-
 
     // Test 6 : Field cut in the middle
     start_header(&header);
@@ -251,7 +255,7 @@ void mtime_fuzzing(){
     create_empty_tar(&header);
     extract(path_file);
 
-    // TODO : impossible date du futur (pas encore d'idée de comment implem ça)
+    // TODO : impossible date du future (pas encore d'idée de comment implem ça)
     
 
     printf("\n~~~ MTIME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
@@ -386,7 +390,7 @@ void remove_files() {
 
     // dunno yet which files to remove
 
-    //system("rm -f archive.tar");
+    system("rm -f archive.tar");
     //system("rm -r *.txt");
 }
 
