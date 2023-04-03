@@ -95,10 +95,10 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
     // Reset data of header
     memset(header, 0, sizeof(tar_header));
 
-    char archive_number[64]; // bold assumption
-    snprintf(archive_number, sizeof(archive_number), "archive_%d.txt", number_of_tar_created++); // TODO : maybe .bin ?
-
-    snprintf(header->name, sizeof(header->name), "%s", archive_number); // TODO MARCO : hacky fix, needs to find better
+    char archive_name[64]; // bold assumption
+    snprintf(archive_name, sizeof(archive_name), "archive_%d.txt", number_of_tar_created++); // TODO : maybe .bin ?
+    printf("archive name: %s\n", archive_name);
+    snprintf(header->name, sizeof(header->name), "%s", archive_name); // TODO MARCO : hacky fix, needs to find better
     snprintf(header->mode, sizeof(header->mode), "0007777"); // all permissions
     snprintf(header->uid, sizeof(header->uid), "0000000");
     snprintf(header->gid, sizeof(header->gid), "0000000");
@@ -142,13 +142,12 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
         fclose(fp);
         exit(EXIT_FAILURE);
     }
-    /*
-    if (fwrite(content, content_size, 1, fp) != 1) { // TODO : DOES NOT WORK HERE I DONT KNOW WHY
-        perror("Error writing content");
-        fclose(fp);
-        exit(EXIT_FAILURE);
-    }
-    */fwrite(content, content_size, 1, fp);
+    if (content_size > 0)
+        if (fwrite(content, content_size, 1, fp) != 1) {
+            perror("Error writing content");
+            fclose(fp);
+            exit(EXIT_FAILURE);
+        }
 
     if (fwrite(end_bytes_buffer, end_size, 1, fp) != 1) {
         perror("Error writing end bytes");
