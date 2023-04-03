@@ -22,6 +22,7 @@ The functions in the file 'help.c' that was provided were split in different fil
 just use `make` lol
 
 then `./fuzzer <path to the tar extractor>`
+like `./fuzzer ./extractor`
 
 ## Useful links used
 - https://www.gnu.org/software/tar/manual/html_node/Standard.html
