@@ -66,11 +66,6 @@ typedef struct tar_header{        /* byte offset */
 
 #define END_BYTES 1024
 
-static int number_of_try = 0; // global variable
-static int number_of_success = 0; // global variable
-
-static int number_of_tar_created = 0; // global variable
-
 
 
 #endif

@@ -423,6 +423,7 @@ void fuzz(){
 
     printf("Number of tries     : %d\n", number_of_try);
     printf("Number of successes : %d\n", number_of_success);
+    printf("Number of tar created: %d\n", number_of_tar_created);
 
     remove_files();
 }

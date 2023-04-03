@@ -4,6 +4,11 @@
 
 #include "utils.h"
 
+int number_of_try = 0; // global variable
+int number_of_success = 0; // global variable
+
+int number_of_tar_created = 0; // global variable
+
 
 
 /**

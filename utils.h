@@ -21,4 +21,10 @@ int extract(char* path);
 
 void start_header(tar_header* header);
 
+extern int number_of_try; // global variable
+extern int number_of_success; // global variable
+
+extern int number_of_tar_created; // global variable
+
+
 #endif
