@@ -389,7 +389,7 @@ void end_of_file() {
 void remove_files() {
 
     // https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
-    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea' -delete"); // TODO hacky fix
+    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); // TODO hacky fix
 
     system("./rm_success.sh");
 }
