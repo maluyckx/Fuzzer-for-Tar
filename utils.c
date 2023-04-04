@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "utils.h"
 
@@ -61,7 +62,6 @@ int extract(char* path){ // PROF FUNCTION
         printf("Error opening pipe!\n");
         return -1;
     }
-    printf("FP : %d\n", fp);
     if(fgets(buf, 33, fp) == NULL) {
         printf("No output\n");
         goto finally;
@@ -108,7 +108,7 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
     snprintf(header->uid, sizeof(header->uid), "0000000");
     snprintf(header->gid, sizeof(header->gid), "0000000");
     snprintf(header->size, sizeof(header->size), "%011o", 0); // size needs to be in octal
-    snprintf(header->mtime, sizeof(header->mtime), "%011o", time(NULL)); // set modification time to current time in octal format
+    snprintf(header->mtime, sizeof(header->mtime), "%011lo", time(NULL)); // set modification time to current time in octal format
     //checksum at the end
     header->typeflag = REGTYPE;
     header->linkname[0] = 0;
@@ -164,13 +164,6 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
         perror("Error closing file");
         exit(EXIT_FAILURE);
     }
-    
-   /*
-   printf("Header : %d\n", fwrite(header, sizeof(tar_header), 1, fp));
-   printf("Content : %d\n", fwrite(content, content_size, 1, fp));
-   printf("End : %d\n", fwrite(end_bytes_buffer, end_size, 1, fp));
-   fclose(fp);
-   */
 }
 
 void create_empty_tar(tar_header* header) { // also maybe need checksum at some point

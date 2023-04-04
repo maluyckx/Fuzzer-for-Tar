@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-// All the value are taken from : https://www.gnu.org/software/tar/manual/html_node/Standard.html
+// All values are taken from : https://www.gnu.org/software/tar/manual/html_node/Standard.html
 
 typedef struct tar_header{        /* byte offset */
     char name[100];               /*   0 */
@@ -60,12 +60,9 @@ typedef struct tar_header{        /* byte offset */
 #define TOWRITE  00002          /* write by other */
 #define TOEXEC   00001          /* execute/search by other */
 
-// OUR CONST (je pourrais les mettre short mais flemme de faire des conversions)
+// OUR CONST
 
 #define HEADER_LENGTH 512
-
 #define END_BYTES 1024
-
-
 
 #endif

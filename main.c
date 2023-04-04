@@ -26,7 +26,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     // Test 2 : Non-ASCII field
 
-    char* not_ascii = 'Ω';
+    char not_ascii = 'Ω'; // warning about overflow is NORMAL, that is what we want
     start_header(&header);
     change_header_field(field_name, &not_ascii, field_size); // omega : is represented in Unicode by the code point U+03A9
     create_empty_tar(&header);
@@ -390,8 +390,15 @@ void remove_files() {
 
     // dunno yet which files to remove
 
-    system("rm -f archive.tar");
-    system("rm -f *.txt");
+    //system("rm -f archive.tar");
+    //system("rm -f *.txt");
+
+    // https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
+    system("shopt -s extglob"); 
+    system("rm -r !('.gitignore'|'constants.h'|'extractor'|'extractor_v2'|'fuzzer'|'fuzzer_statement.pdf'|'help.c'|'main.c'|'Makefile'|'README.md'|'utils.c'|'utils.h'|'success_*')");
+    system(" -u extglob");
+
+
 }
 
 
@@ -400,8 +407,8 @@ void fuzz(){
 
     // TODO : need to check the checksum each time I think
 
-    // name_fuzzing();
-    mode_fuzzing();
+    name_fuzzing();
+    // mode_fuzzing();
     // uid_fuzzing();
     // gid_fuzzing();
     // field_size_fuzzing();
