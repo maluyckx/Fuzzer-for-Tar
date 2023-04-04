@@ -5,12 +5,23 @@
 
 #include "utils.h"
 
-int number_of_try = 0; // global variable
-int number_of_success = 0; // global variable
-
-int number_of_tar_created = 0; // global variable
+struct test_status_t test_status;
 
 
+void init_test_status(struct test_status_t *ts) {
+    memset(ts, 0, sizeof(int)*12);
+}
+
+void print_test_status(struct test_status_t *ts) {
+    printf("\n\nTest status:\nnumber of trials: %d\nnumber of success: %d\nnumber of tar created: %d\n\n"
+           "success with empty field: %d\n\tnon ASCII field: %d\n\tnon numeric field: %d\n\ttoo short field: %d\n\t"
+           "non octal field: %d\n\tfield cut in middle: %d\n\tfield null terminated: %d\n\t"
+           "field with null byte in the middle: %d\n\tfield with special character: %d\n\n",
+           ts->number_of_tries, ts->number_of_success, ts->number_or_tar_created, ts->successful_with_empty_field,
+           ts->successful_with_non_ASCII_field, ts->successful_with_non_numeric_field, ts->successful_with_too_short_field,
+           ts->successful_with_non_octal_field, ts->successful_with_field_cut_in_middle, ts->successful_with_field_not_terminated_null_byte,
+           ts->successful_with_null_byte_in_the_middle, ts->successful_with_special_character);
+}
 
 /**
  * Computes the checksum for a tar header and encode it on the header
@@ -36,7 +47,6 @@ unsigned int calculate_checksum(struct tar_header* entry){
 }
 
 
-
 /**
  * Launches another executable given as argument,
  * parses its output and check whether or not it matches "*** The program has crashed ***".
@@ -49,8 +59,8 @@ unsigned int calculate_checksum(struct tar_header* entry){
  * compile it and use the executable to restart our computer.
  */
 int extract(char* path){ // PROF FUNCTION
-    number_of_try++;
-    
+    test_status.number_of_tries++;
+
     int rv = 0; // return value
     char cmd[51];
     strncpy(cmd, path, 25);
@@ -72,11 +82,11 @@ int extract(char* path){ // PROF FUNCTION
     } else {
         printf("Crash message\n");
         rv = 1;
-        number_of_success++;
-        
+        test_status.number_of_success++;
+
         char success_name[200];
-        snprintf(success_name, sizeof(success_name), "success_%d.tar", number_of_success);
-        
+        snprintf(success_name, sizeof(success_name), "success_%d.tar", test_status.number_of_success);
+
         int result = rename("archive.tar", success_name);
         if (result == 0) {
             printf("File moved successfully!\n");
@@ -101,7 +111,7 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
     memset(header, 0, sizeof(tar_header));
 
     char archive_name[64]; // bold assumption
-    snprintf(archive_name, sizeof(archive_name), "archive_%d.txt", number_of_tar_created++); // TODO : maybe .bin ?
+    snprintf(archive_name, sizeof(archive_name), "archive_%d.txt", test_status.number_or_tar_created++); // TODO : maybe .bin ?
     printf("archive name: %s\n", archive_name);
     snprintf(header->name, sizeof(header->name), "%s", archive_name); // TODO MARCO : hacky fix, needs to find better
     snprintf(header->mode, sizeof(header->mode), "0007777"); // all permissions
@@ -112,7 +122,7 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
     //checksum at the end
     header->typeflag = REGTYPE;
     header->linkname[0] = 0;
-    snprintf(header->magic, sizeof(header->magic), TMAGIC); 
+    snprintf(header->magic, sizeof(header->magic), TMAGIC);
     snprintf(header->version, sizeof(header->version) + 1,  TVERSION); //  '+ 1' NEEDED BECAUSE 'NO NULL' FUCK THIS SHIT
     // TODO understand the warning and maybe fix it : ‘snprintf’ output 3 bytes into a destination of size 2
     snprintf(header->uname, sizeof(header->uname), "root");
@@ -129,11 +139,10 @@ void change_size(tar_header* header, size_t size) {
 }
 
 
+
 void change_header_field(char* header_field, char* new_value, size_t size) { // might not be needed but it is wayyyyy prettier
     strncpy(header_field, new_value, size); // seg fault here
 }
-
-
 
 void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) { // maybe need checksum at some point
 
@@ -143,7 +152,7 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
         perror("Error opening file");
         exit(EXIT_FAILURE);
     }
-    
+
     if (fwrite(header, sizeof(tar_header), 1, fp) != 1) {
         perror("Error writing header");
         fclose(fp);
@@ -168,17 +177,17 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
     }
 }
 
+
+
 void create_empty_tar(tar_header* header) { // also maybe need checksum at some point
-    
+
     char end_bytes[END_BYTES];
     memset(end_bytes, 0, END_BYTES);
 
     create_tar(header, "", 0, end_bytes, END_BYTES); // TODO check if "" == NULL
 }
 
-
-
-// DEBUG 
+// DEBUG
 
 void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à faire cet affichage débile)
     printf("-----Header start-----\n");

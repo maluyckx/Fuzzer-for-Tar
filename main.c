@@ -22,7 +22,9 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     change_header_field(field_name, "", field_size);
     create_empty_tar(&header);
     //print_header(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_empty_field++;
+    }
 
     // Test 2 : Non-ASCII field
 
@@ -30,14 +32,18 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     start_header(&header);
     change_header_field(field_name, &not_ascii, field_size); // omega : is represented in Unicode by the code point U+03A9
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_non_ASCII_field++;
+    }
 
     // Test 3 : Non-numeric field
     char non_numeric_field[] = "https://www.youtube.com/watch?v=oLsVrshvOaI";
     start_header(&header);
     change_header_field(field_name, &non_numeric_field, field_size); // warning is FINE : it is NORMAL that it is too long
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_non_numeric_field++;
+    }
 
     // Test 4 : Too short field TODO
 
@@ -47,48 +53,63 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     memset(field_name, '9', field_size - 1); // like we say in french : 'simple et efficace' 
     field_name[field_size - 1] = 0;
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_non_octal_field++;
+    }
 
     // Test 6 : Field cut in the middle
     start_header(&header);
     memset(field_name, 0, field_size);
     memset(field_name, '1', field_size / 2 );
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_field_cut_in_middle++;
+    }
 
     // Test 7 : Field not terminated by null byte
     start_header(&header);
     memset(field_name, '5', field_size);
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_field_not_terminated_null_byte++;
+    }
 
     // TODO : etre plus descriptif que 'part 1'
+    // TODO : avoir plusieurs champs dans le status de test?
     // Test 8 : Null byte in the middle of the field (Part 1)
     start_header(&header);
     memset(field_name, 0, field_size);
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_null_byte_in_the_middle++;
+    }
 
     // Test 9 : Null byte in the middle of the field (Part 2)
     start_header(&header);
     memset(field_name, 0, field_size);
     memset(field_name, '0', field_size / 2);
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_null_byte_in_the_middle++;
+    }
 
     // Test 11 : Null byte in the middle of the field (Part 3)
     start_header(&header);
     memset(field_name, '0', field_size - 1);
     field_name[field_size - 1] = 0;
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_null_byte_in_the_middle++;
+    }
 
     // Test 11 : Null byte in the middle of the field (Part 4)
     start_header(&header);
     memset(field_name, 0, field_size - 1);
     field_name[field_size - 1] = '0';
     create_empty_tar(&header);
-    extract(path_file);
+    if (extract(path_file) == 1) {
+        test_status.successful_with_null_byte_in_the_middle++;
+    }
 
     // Test 12 : Check for special characters, whitespace or control characters | TODO verify that it is correct, it smells fishy
     char special_chars[] = { '\"', '\'', ' ', '\t', '\r', '\n', '\v', '\f' };
@@ -97,7 +118,9 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
         memset(field_name, special_chars[i], field_size);
         field_name[field_size - 1] = 0;
         create_empty_tar(&header);
-        extract(path_file);
+        if (extract(path_file) == 1) {
+            test_status.successful_with_special_character++;
+        }
     }
 
     // TODO
@@ -396,7 +419,8 @@ void remove_files() {
 
 
 void fuzz(){
-    printf("path_file : %s\n", path_file); 
+    init_test_status(&test_status);
+    printf("path_file : %s\n", path_file);
 
     // TODO : need to check the checksum each time I think
 
@@ -415,11 +439,9 @@ void fuzz(){
     gname_fuzzing();
 
 
-    //end_of_file(); // TODO 
+    //end_of_file(); // TODO
 
-    printf("Number of tries       : %d\n", number_of_try);
-    printf("Number of successes   : %d\n", number_of_success);
-    printf("Number of tar created : %d\n", number_of_tar_created);
+    print_test_status(&test_status);
 
     remove_files();
 }
