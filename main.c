@@ -388,17 +388,8 @@ void end_of_file() {
 
 void remove_files() {
 
-    // dunno yet which files to remove
-
-    //system("rm -f archive.tar");
-    //system("rm -f *.txt");
-
     // https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
-    system("shopt -s extglob"); 
-    system("rm -r !('.gitignore'|'constants.h'|'extractor'|'extractor_v2'|'fuzzer'|'fuzzer_statement.pdf'|'help.c'|'main.c'|'Makefile'|'README.md'|'utils.c'|'utils.h'|'success_*')");
-    system(" -u extglob");
-
-
+    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' -delete");
 }
 
 
@@ -408,29 +399,25 @@ void fuzz(){
     // TODO : need to check the checksum each time I think
 
     name_fuzzing();
-    // mode_fuzzing();
-    // uid_fuzzing();
-    // gid_fuzzing();
-    // field_size_fuzzing();
-    // mtime_fuzzing();
-    // chksum_fuzzing();
-    // typeflag_fuzzing();
-    // linkname_fuzzing();
-    // magic_fuzzing();
-    // version_fuzzing();
-    // uname_fuzzing();
-    // gname_fuzzing();
+    mode_fuzzing();
+    uid_fuzzing();
+    gid_fuzzing();
+    size_fuzzing();
+    mtime_fuzzing();
+    chksum_fuzzing();
+    typeflag_fuzzing();
+    linkname_fuzzing();
+    magic_fuzzing();
+    version_fuzzing();
+    uname_fuzzing();
+    gname_fuzzing();
 
 
-    // end_of_file();
+    //end_of_file(); // TODO 
 
-    // all the functions to test each headers
-    // in each function, test extraction at the end 
-
-
-    printf("Number of tries     : %d\n", number_of_try);
-    printf("Number of successes : %d\n", number_of_success);
-    printf("Number of tar created: %d\n", number_of_tar_created);
+    printf("Number of tries       : %d\n", number_of_try);
+    printf("Number of successes   : %d\n", number_of_success);
+    printf("Number of tar created : %d\n", number_of_tar_created);
 
     remove_files();
 }

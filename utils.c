@@ -136,6 +136,8 @@ void change_header_field(char* header_field, char* new_value, size_t size) { // 
 
 
 void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) { // maybe need checksum at some point
+
+    calculate_checksum(header);
     FILE *fp = fopen("archive.tar", "wb");
     if (fp == NULL) {
         perror("Error opening file");
@@ -153,12 +155,12 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
             fclose(fp);
             exit(EXIT_FAILURE);
         }
-
-    if (fwrite(end_bytes_buffer, end_size, 1, fp) != 1) {
-        perror("Error writing end bytes");
-        fclose(fp);
-        exit(EXIT_FAILURE);
-    }
+    if (end_size > 0)
+        if (fwrite(end_bytes_buffer, end_size, 1, fp) != 1) {
+            perror("Error writing end bytes");
+            fclose(fp);
+            exit(EXIT_FAILURE);
+        }
 
     if (fclose(fp) != 0) {
         perror("Error closing file");
@@ -168,7 +170,6 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
 
 void create_empty_tar(tar_header* header) { // also maybe need checksum at some point
     
-    calculate_checksum(header);
     char end_bytes[END_BYTES];
     memset(end_bytes, 0, END_BYTES);
 
