@@ -3,7 +3,7 @@
 
 #include "constants.h"
 
-struct test_status_t {
+struct test_status_t { // Struct to keep track of the status of various tests performed on the tar file
     int number_of_tries;
     int number_of_success;
     int number_or_tar_created;
@@ -32,8 +32,6 @@ struct test_status_t {
     int uname_fuzzing_success;
     int gname_fuzzing_success;
     int end_of_file_fuzzing_success;
-
-
 };
 
 void init_test_status(struct test_status_t* ts);

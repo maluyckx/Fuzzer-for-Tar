@@ -486,7 +486,6 @@ void fuzz(){
 
 
 int main(int argc, char* argv[]){
-
     if (argc != 2) {
         printf("Invalid number of arguments.\n");
         printf("This is a valid command : ./fuzzer <path to the tar extractor>");

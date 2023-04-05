@@ -7,30 +7,22 @@
 
 struct test_status_t test_status;
 
-
+/**
+ * @brief TODO VINCENT
+ * 
+ * @param ts 
+ */
 void init_test_status(struct test_status_t *ts) {
     memset(ts, 0, sizeof(int)*26);
 }
-/* 
-void print_test_status(struct test_status_t *ts) { // TODO VINCENT : make a better version of this => more lisible pour un humain normal qui lit le code
-    printf("\n\nTest status:\nnumber of trials: %d\nnumber of success: %d\n\n"
-           "success with empty field: %d\n\tnon ASCII field: %d\n\tnon numeric field: %d\n\ttoo short field: %d\n\t"
-           "non octal field: %d\n\tfield cut in middle: %d\n\tfield null terminated: %d\n\t"
-           "field with null byte in the middle: %d\n\tfield with special character: %d\n\n"
-           "Success on name field: %d\n\tmode field: %d\n\tuid field: %d\n\tgid field: %d\n\tsize field: %d\n\t"
-           "mtime field: %d\n\tchecksum field: %d\n\ttypeflag field: %d\n\tlinkname field: %d\n\tmagic field: %d\n\t"
-           "version field: %d\n\tuname field: %d\n\tgname field: %d\n\tend of file field: %d\n\n",
-           ts->number_of_tries, ts->number_of_success, ts->successful_with_empty_field,
-           ts->successful_with_non_ASCII_field, ts->successful_with_non_numeric_field, ts->successful_with_too_short_field,
-           ts->successful_with_non_octal_field, ts->successful_with_field_cut_in_middle, ts->successful_with_field_not_terminated_null_byte,
-           ts->successful_with_null_byte_in_the_middle, ts->successful_with_special_character, ts->name_fuzzing_success,
-           ts->mode_fuzzing_success, ts->uid_fuzzing_success, ts->gid_fuzzing_success, ts->size_fuzzing_success,
-           ts->mtime_fuzzing_success, ts->checksum_fuzzing_success, ts->typeflag_fuzzing_success, ts->linkname_fuzzing_success,
-           ts->magic_fuzzing_success, ts->version_fuzzing_success, ts->uname_fuzzing_success, ts->gname_fuzzing_success,
-           ts->end_of_file_fuzzing_success);
-}
-*/
-void print_test_status(struct test_status_t *ts) { // TODO VINCENT : si tu valides ce format, remove la function du dessus
+
+/**
+ * @brief Prints the test status struct to stdout in a user-friendly format, providing a global overview of the program's execution.
+ *        The output provides insight into which fields were fuzzed successfully and which were not.
+ *        This function is useful for debugging and assessing the quality of the test cases.
+ * @param ts Pointer to the test_status_t struct to print.
+ */
+void print_test_status(struct test_status_t *ts) {
     printf("\n\nTest status:\n");
     printf("Number of trials: %d\n", ts->number_of_tries);
     printf("Number of success: %d\n\n", ts->number_of_success);
@@ -62,7 +54,8 @@ void print_test_status(struct test_status_t *ts) { // TODO VINCENT : si tu valid
 }
 
 /**
- * Computes the checksum for a tar header and encode it on the header
+ * @brief Computes the checksum for a tar header and encode it on the header
+ *        This function was taken for the 'help.c' file that was provided.
  * @param entry: The tar header
  * @return the value of the checksum
  */
@@ -86,15 +79,13 @@ unsigned int calculate_checksum(struct tar_header* entry){
 
 
 /**
- * Launches another executable given as argument,
- * parses its output and check whether or not it matches "*** The program has crashed ***".
- * @param the path to the executable
+ * @brief Launches another executable given as argument,
+ *        parses its output and check whether or not it matches "*** The program has crashed ***".
+ *        This function was taken for the 'help.c' file that was provided.
+ * @param path the path to the executable
  * @return -1 if the executable cannot be launched,
  *          0 if it is launched but does not print "*** The program has crashed ***",
  *          1 if it is launched and prints "*** The program has crashed ***".
- *
- * BONUS (for fun, no additional marks) without modifying this code,
- * compile it and use the executable to restart our computer.
  */
 int extract(char* path){ // PROF FUNCTION
     test_status.number_of_tries++;
@@ -142,7 +133,13 @@ int extract(char* path){ // PROF FUNCTION
     return rv;
 }
 
-
+/**
+ * @brief Initializes a tar header with default values and sets the necessary fields,
+ *        such as the archive name, mode, uid, gid, size, etc to prepare it for the creation of a tar archive.
+ *        The function also calculates the header checksum after setting all the header fields.
+ *
+ * @param header The tar header struct to be initialized.
+ */
 void start_header(tar_header* header) { // TODO : maybe some constants here ?
 
     char archive_name[100];
@@ -151,7 +148,6 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
     char full_zero[8] = "0000000";
 
     memset(header, 0, sizeof(tar_header));
-    //printf("archive name: %s\n", archive_name);
 
     snprintf(header->name, sizeof(header->name), "%s", archive_name);
     snprintf(header->mode, sizeof(header->mode), "07777"); // all perms (based on constants.h)
@@ -172,6 +168,15 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
     calculate_checksum(header);
 }
 
+/**
+ * @brief Create a tar archive and write it to disk.
+ * 
+ * @param header The header of the tar archive to create.
+ * @param content A pointer to the content to write to the archive.
+ * @param content_size The size of the content to write.
+ * @param end_bytes_buffer A buffer containing end-of-archive null blocks.
+ * @param end_size The size of the end_bytes_buffer.
+ */
 void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) {
     calculate_checksum(header);
     FILE *fp = fopen("archive.tar", "wb");
@@ -204,14 +209,25 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
     }
 }
 
-
+/**
+ * @brief Create an empty tar archive.
+ *        This function creates an empty tar archive with the given header by calling
+ *        the create_tar function with a NULL data buffer and zero data length.
+ * 
+ * @param header A pointer to the header of the tar archive to create.
+ */
 void create_empty_tar(tar_header* header) {
     char end_bytes[END_BYTES];
     memset(end_bytes, 0, END_BYTES);
     create_tar(header, NULL, 0, end_bytes, END_BYTES);
 }
 
-// DEBUG
+
+/**
+ * @brief Prints the contents of a tar_header struct. Used for debug purposes.
+ * 
+ * @param header Pointer to a tar_header struct to print.
+ */
 
 void print_header(tar_header* header) {
     printf("-----Header start-----\n");
