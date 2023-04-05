@@ -17,6 +17,23 @@ struct test_status_t {
     int successful_with_field_not_terminated_null_byte;
     int successful_with_null_byte_in_the_middle;
     int successful_with_special_character;
+
+    int name_fuzzing_success;
+    int mode_fuzzing_success;
+    int uid_fuzzing_success;
+    int gid_fuzzing_success;
+    int size_fuzzing_success;
+    int mtime_fuzzing_success;
+    int checksum_fuzzing_success;
+    int typeflag_fuzzing_success;
+    int linkname_fuzzing_success;
+    int magic_fuzzing_success;
+    int version_fuzzing_success;
+    int uname_fuzzing_success;
+    int gname_fuzzing_success;
+    int end_of_file_fuzzing_success;
+
+
 };
 
 void init_test_status(struct test_status_t* ts);

@@ -165,10 +165,12 @@ void remove_null_terminators(char* field_name, size_t field_size){
 void name_fuzzing(){
 
     printf("\n~~~ NAME Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.name, sizeof(header.name));
 
 
+    test_status.name_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
@@ -176,6 +178,7 @@ void mode_fuzzing(){
 
     printf("\n~~~ MODE Header Fuzzing ~~~\n");
     int modes[] = {TSUID, TSGID, TSVTX, TUREAD, TUWRITE, TUEXEC, TGREAD, TGWRITE, TGEXEC, TOREAD, TOWRITE, TOEXEC}; // from constants.h
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.mode, sizeof(header.mode));
 
@@ -191,6 +194,7 @@ void mode_fuzzing(){
 
     // TODO : maybe try other values ? like every possible values scrambled
 
+    test_status.mode_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
 }
@@ -198,9 +202,11 @@ void mode_fuzzing(){
 void uid_fuzzing(){
 
     printf("\n~~~ UID Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.uid, sizeof(header.uid));
 
+    test_status.uid_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ UID Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
 }
@@ -208,27 +214,31 @@ void uid_fuzzing(){
 void gid_fuzzing(){
     
     printf("\n~~~ GID Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.gid, sizeof(header.gid));
 
+    test_status.gid_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ GID Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void size_fuzzing(){
 
     printf("\n~~~ SIZE Header Fuzzing ~~~\n");
-
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.size, sizeof(header.size));
 
     // TODO : i have no idea for the moment
 
+    test_status.size_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ SIZE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void mtime_fuzzing(){
 
     printf("\n~~~ MTIME Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.mtime, sizeof(header.mtime));
 
@@ -281,21 +291,25 @@ void mtime_fuzzing(){
     // TODO : impossible date du future (pas encore d'idée de comment implem ça)
     
 
+    test_status.mtime_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ MTIME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void chksum_fuzzing(){
     printf("\n~~~ CHECKSUM Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.chksum, sizeof(header.chksum));
 
     // TODO : need other idea
+    test_status.checksum_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ CHECKSUM Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void typeflag_fuzzing(){
 
     printf("\n~~~ TYPEFLAG Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     // Single char element : BRUTE-FORCE GO BRRRRRRRRRRRRRRRRRRRRRRRRR
 
@@ -308,29 +322,35 @@ void typeflag_fuzzing(){
 
     // TODO : maybe try with negative value ? or some shit
 
+    test_status.typeflag_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ TYPEFLAG Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void linkname_fuzzing(){
     printf("\n~~~ LINKNAME Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.linkname, sizeof(header.linkname));
     // TODO : linkname not leading anywhere. Comments of Marco from the future : I have absolutely no idea what I meant there.
+    test_status.linkname_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ LINKNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void magic_fuzzing(){
 
     printf("\n~~~ MAGIC Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.magic, sizeof(header.magic));
 
+    test_status.magic_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ MAGIC Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void version_fuzzing(){
 
     printf("\n~~~ VERSION Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.version, sizeof(header.version));
 
@@ -352,17 +372,20 @@ void version_fuzzing(){
 
     // TODO : maybe try with negative value ? or some shit
 
+    test_status.version_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ VERSION Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 void uname_fuzzing(){
 
     printf("\n~~~ UNAME Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.uname, sizeof(header.uname));
 
     // TODO : need other idea
 
+    test_status.uname_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ UNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 
 }
@@ -370,11 +393,13 @@ void uname_fuzzing(){
 void gname_fuzzing(){
 
     printf("\n~~~ GNAME Header Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.gname, sizeof(header.gname));
 
     // TODO : need other idea
 
+    test_status.gname_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ GNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
 }
@@ -382,6 +407,8 @@ void gname_fuzzing(){
 void end_of_file() {
 
     printf("\n~~~ End of File Fuzzing ~~~\n");
+    int previous_success = test_status.number_of_success;
+
     // Define lengths to test
     int end_sizes[] = {0, 1, END_BYTES / 2 , END_BYTES - 1, END_BYTES, END_BYTES + 1, END_BYTES * 2};
     // Define longest buffer of 0 possible
@@ -405,6 +432,8 @@ void end_of_file() {
         create_tar(&header, content, content_size, end_bytes, end_sizes[i]);
         extract(path_file);
     }
+
+    test_status.end_of_file_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ End of File Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
@@ -437,7 +466,7 @@ void fuzz(){
     gname_fuzzing();
 
 
-    //end_of_file(); // TODO
+    end_of_file();
 
     print_test_status(&test_status);
 

@@ -9,18 +9,25 @@ struct test_status_t test_status;
 
 
 void init_test_status(struct test_status_t *ts) {
-    memset(ts, 0, sizeof(int)*12);
+    memset(ts, 0, sizeof(int)*26);
 }
 
 void print_test_status(struct test_status_t *ts) {
-    printf("\n\nTest status:\nnumber of trials: %d\nnumber of success: %d\nnumber of tar created: %d\n\n"
+    printf("\n\nTest status:\nnumber of trials: %d\nnumber of success: %d\n\n"
            "success with empty field: %d\n\tnon ASCII field: %d\n\tnon numeric field: %d\n\ttoo short field: %d\n\t"
            "non octal field: %d\n\tfield cut in middle: %d\n\tfield null terminated: %d\n\t"
-           "field with null byte in the middle: %d\n\tfield with special character: %d\n\n",
-           ts->number_of_tries, ts->number_of_success, ts->number_or_tar_created, ts->successful_with_empty_field,
+           "field with null byte in the middle: %d\n\tfield with special character: %d\n\n"
+           "Success on name field: %d\n\tmode field: %d\n\tuid field: %d\n\tgid field: %d\n\tsize field: %d\n\t"
+           "mtime field: %d\n\tchecksum field: %d\n\ttypeflag field: %d\n\tlinkname field: %d\n\tmagic field: %d\n\t"
+           "version field: %d\n\tuname field: %d\n\tgname field: %d\n\tend of file field: %d\n\n",
+           ts->number_of_tries, ts->number_of_success, ts->successful_with_empty_field,
            ts->successful_with_non_ASCII_field, ts->successful_with_non_numeric_field, ts->successful_with_too_short_field,
            ts->successful_with_non_octal_field, ts->successful_with_field_cut_in_middle, ts->successful_with_field_not_terminated_null_byte,
-           ts->successful_with_null_byte_in_the_middle, ts->successful_with_special_character);
+           ts->successful_with_null_byte_in_the_middle, ts->successful_with_special_character, ts->name_fuzzing_success,
+           ts->mode_fuzzing_success, ts->uid_fuzzing_success, ts->gid_fuzzing_success, ts->size_fuzzing_success,
+           ts->mtime_fuzzing_success, ts->checksum_fuzzing_success, ts->typeflag_fuzzing_success, ts->linkname_fuzzing_success,
+           ts->magic_fuzzing_success, ts->version_fuzzing_success, ts->uname_fuzzing_success, ts->gname_fuzzing_success,
+           ts->end_of_file_fuzzing_success);
 }
 
 /**
