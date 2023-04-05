@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -o3
 
 TARGET = fuzzer
 SRC = main.c utils.c

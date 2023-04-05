@@ -6,22 +6,18 @@
 
 #include "utils.h"
 
-
 static tar_header header; // really bad coding practice but otherwise, I would need to pass the arg to EVERY function in this project
 
 char* path_file; // Workaround to avoid passing the variable as an argument to every function in the program TODO : find a better name lol
 
 void fuzzing_on_precise_field(char* field_name, size_t field_size) {
-    // field size is needed : https://stackoverflow.com/questions/5493281/c-sizeof-a-passed-array
+    // field size is needed in the definition : https://stackoverflow.com/questions/5493281/c-sizeof-a-passed-array
 
-    printf("size of the field: %ld\n", field_size);
 
     // Test 1 : Empty field
     start_header(&header);
-    //print_header(&header);
-    change_header_field(field_name, "", field_size);
+    strncpy(field_name, "", field_size);
     create_empty_tar(&header);
-    //print_header(&header);
     if (extract(path_file) == 1) {
         test_status.successful_with_empty_field++;
     }
@@ -30,7 +26,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     char not_ascii = 'Ω'; // warning about overflow is NORMAL, that is what we want
     start_header(&header);
-    change_header_field(field_name, &not_ascii, field_size); // omega : is represented in Unicode by the code point U+03A9
+    strncpy(field_name, &not_ascii, field_size); // omega : is represented in Unicode by the code point U+03A9
     create_empty_tar(&header);
     if (extract(path_file) == 1) {
         test_status.successful_with_non_ASCII_field++;
@@ -39,7 +35,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // Test 3 : Non-numeric field
     char non_numeric_field[] = "https://www.youtube.com/watch?v=oLsVrshvOaI";
     start_header(&header);
-    change_header_field(field_name, &non_numeric_field, field_size); // warning is FINE : it is NORMAL that it is too long
+    strncpy(field_name, non_numeric_field, field_size); // warning is FINE : it is NORMAL that it is too long
     create_empty_tar(&header);
     if (extract(path_file) == 1) {
         test_status.successful_with_non_numeric_field++;
@@ -50,7 +46,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     // Test 5 : Not octal field
     start_header(&header);
-    memset(field_name, '9', field_size - 1); // like we say in french : 'simple et efficace' 
+    memset(field_name, '9', field_size - 1); 
     field_name[field_size - 1] = 0;
     create_empty_tar(&header);
     if (extract(path_file) == 1) {
@@ -169,7 +165,6 @@ void name_fuzzing(){
 
     fuzzing_on_precise_field(header.name, sizeof(header.name));
 
-
     test_status.name_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -187,7 +182,7 @@ void mode_fuzzing(){
         char mode[sizeof(header.mode)];
         start_header(&header);
         snprintf(mode, sizeof(header.mode), "%07o", modes[i]); // TODO : verify why %070
-        change_header_field(header.mode, mode, sizeof(header.mode));
+        strncpy(header.mode, mode, sizeof(header.mode));
         create_empty_tar(&header);
         extract(path_file);
     }
@@ -246,45 +241,54 @@ void mtime_fuzzing(){
     time_t now = time(NULL); // get current time 
     printf("Seconds after 1970 : %ld\n", now);
 
+    // TODO maybe faire une fonction car ça se repète fort
+
     // Test with impossible date in the past (before 1970)
     start_header(&header);
     snprintf(time_to_try, sizeof(header.mtime), "%o", -300); // 5 minutes before 1970
-    change_header_field(header.mtime, time_to_try, sizeof(header.mtime));
+    strncpy(header.mtime, time_to_try, sizeof(header.mtime));
     create_empty_tar(&header);
     extract(path_file);
 
     // Test with date in the past (5 minutes after 1970)
     start_header(&header);
     snprintf(time_to_try, sizeof(header.mtime), "%o", 300); // 5 minutes in 1970
-    change_header_field(header.mtime, time_to_try, sizeof(header.mtime));
+    strncpy(header.mtime, time_to_try, sizeof(header.mtime));
     create_empty_tar(&header);
     extract(path_file);
 
     // Test with date 1 year in the past
     start_header(&header);
     snprintf(time_to_try, sizeof(header.mtime), "%lo", now - 31536000); // 1 year ago
-    change_header_field(header.mtime, time_to_try, sizeof(header.mtime));
+    strncpy(header.mtime, time_to_try, sizeof(header.mtime));
     create_empty_tar(&header);
     extract(path_file);
 
     // Test with current date
     start_header(&header);
     snprintf(time_to_try, sizeof(header.mtime), "%lo", now);
-    change_header_field(header.mtime, time_to_try, sizeof(header.mtime));;
+    strncpy(header.mtime, time_to_try, sizeof(header.mtime));
     create_empty_tar(&header);
     extract(path_file);
 
     // Test with date 1 month in the future
     start_header(&header);
     snprintf(time_to_try, sizeof(header.mtime), "%lo", now + 31536000); // 1 month from now
-    change_header_field(header.mtime, time_to_try, sizeof(header.mtime));
+    strncpy(header.mtime, time_to_try, sizeof(header.mtime));
     create_empty_tar(&header);
     extract(path_file);
 
-    // Test with the maximum value for an int : TODO check if int or long int or long long int
+    // Test with the maximum value for an int
     start_header(&header);
     snprintf(time_to_try, sizeof(header.mtime), "%lo", now + __INT_MAX__); // maximum value for int
-    change_header_field(header.mtime, time_to_try, sizeof(header.mtime));
+    strncpy(header.mtime, time_to_try, sizeof(header.mtime));
+    create_empty_tar(&header);
+    extract(path_file);
+
+    // Test with the maximum value for an long long int
+    start_header(&header);
+    snprintf(time_to_try, sizeof(header.mtime), "%llo", now + __LONG_LONG_MAX__); // maximum value for long long
+    strncpy(header.mtime, time_to_try, sizeof(header.mtime));
     create_empty_tar(&header);
     extract(path_file);
 
@@ -320,7 +324,18 @@ void typeflag_fuzzing(){
         extract(path_file);
     }
 
-    // TODO : maybe try with negative value ? or some shit
+    // Test with negative values
+    start_header(&header);
+    header.typeflag = -1;
+    create_empty_tar(&header);
+    extract(path_file);
+
+    // Test with non-ASCII characters
+    start_header(&header);
+    header.typeflag = '日'; // warning about overflow is NORMAL, that is what we want
+    create_empty_tar(&header);
+    extract(path_file);
+
 
     test_status.typeflag_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ TYPEFLAG Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
@@ -331,7 +346,7 @@ void linkname_fuzzing(){
     int previous_success = test_status.number_of_success;
 
     fuzzing_on_precise_field(header.linkname, sizeof(header.linkname));
-    // TODO : linkname not leading anywhere. Comments of Marco from the future : I have absolutely no idea what I meant there.
+    
     test_status.linkname_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ LINKNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -364,7 +379,7 @@ void version_fuzzing(){
             octal[1] = j + '0';
             
             start_header(&header);
-            change_header_field(header.version, octal, sizeof(header.version));
+            strncpy(header.version, octal, sizeof(header.version));
             create_empty_tar(&header);
             extract(path_file);
         }
@@ -409,11 +424,11 @@ void end_of_file() {
     printf("\n~~~ End of File Fuzzing ~~~\n");
     int previous_success = test_status.number_of_success;
 
-    // Define lengths to test
-    int end_sizes[] = {0, 1, END_BYTES / 2 , END_BYTES - 1, END_BYTES, END_BYTES + 1, END_BYTES * 2};
-    // Define longest buffer of 0 possible
-    char end_bytes[END_BYTES * 2];
-    memset(end_bytes, 0, END_BYTES * 2);
+    int end_sizes[] = {0, 1, END_BYTES / 4, END_BYTES / 2 , END_BYTES - 1, END_BYTES, END_BYTES + 1, END_BYTES * 2, END_BYTES * 4};
+    int size_of_end_sizes = sizeof(end_sizes) / sizeof(int);
+
+    char end_bytes[end_sizes[size_of_end_sizes - 1]];
+    memset(end_bytes, 0, end_sizes[size_of_end_sizes - 1]);
     char content[] = "https://www.youtube.com/watch?v=xvFZjo5PgG0"; // dummy text
     size_t content_size = strlen(content);
 
@@ -421,14 +436,12 @@ void end_of_file() {
 
         // Without file content
         start_header(&header);
-        create_tar(&header, "", 0, end_bytes, end_sizes[i]);
+        create_tar(&header, NULL, 0, end_bytes, end_sizes[i]);
         extract(path_file);
 
         // With file content 
-        // Define field_size of content
         start_header(&header);
-        change_size(&header, content_size);
-        // octal value for the checksum : crash without it, no fucking idea why (TODO : make it a function since it is the second time i used it)
+        snprintf(header.size, sizeof(header.size), "%011lo", content_size);
         create_tar(&header, content, content_size, end_bytes, end_sizes[i]);
         extract(path_file);
     }
@@ -439,10 +452,9 @@ void end_of_file() {
 
 
 void remove_files() {
-
     // https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
-    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); // TODO hacky fix
 
+    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); 
     system("./rm_success.sh");
 }
 
@@ -465,7 +477,6 @@ void fuzz(){
     uname_fuzzing();
     gname_fuzzing();
 
-
     end_of_file();
 
     print_test_status(&test_status);
@@ -474,12 +485,12 @@ void fuzz(){
 }
 
 
-
 int main(int argc, char* argv[]){
 
     if (argc != 2) {
         printf("Invalid number of arguments.\n");
         printf("This is a valid command : ./fuzzer <path to the tar extractor>");
+        printf("Example : ./fuzzer ./extractor");
         return -1;
     }
     path_file = argv[1];

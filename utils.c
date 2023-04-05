@@ -11,8 +11,8 @@ struct test_status_t test_status;
 void init_test_status(struct test_status_t *ts) {
     memset(ts, 0, sizeof(int)*26);
 }
-
-void print_test_status(struct test_status_t *ts) {
+/* 
+void print_test_status(struct test_status_t *ts) { // TODO VINCENT : make a better version of this => more lisible pour un humain normal qui lit le code
     printf("\n\nTest status:\nnumber of trials: %d\nnumber of success: %d\n\n"
            "success with empty field: %d\n\tnon ASCII field: %d\n\tnon numeric field: %d\n\ttoo short field: %d\n\t"
            "non octal field: %d\n\tfield cut in middle: %d\n\tfield null terminated: %d\n\t"
@@ -28,6 +28,37 @@ void print_test_status(struct test_status_t *ts) {
            ts->mtime_fuzzing_success, ts->checksum_fuzzing_success, ts->typeflag_fuzzing_success, ts->linkname_fuzzing_success,
            ts->magic_fuzzing_success, ts->version_fuzzing_success, ts->uname_fuzzing_success, ts->gname_fuzzing_success,
            ts->end_of_file_fuzzing_success);
+}
+*/
+void print_test_status(struct test_status_t *ts) { // TODO VINCENT : si tu valides ce format, remove la function du dessus
+    printf("\n\nTest status:\n");
+    printf("Number of trials: %d\n", ts->number_of_tries);
+    printf("Number of success: %d\n\n", ts->number_of_success);
+    printf("Success with \n");
+    printf("\t     Empty field                       : %d\n", ts->successful_with_empty_field);
+    printf("\t     non ASCII field                   : %d\n", ts->successful_with_non_ASCII_field);
+    printf("\t     non numeric field                 : %d\n", ts->successful_with_non_numeric_field);
+    printf("\t     too short field                   : %d\n", ts->successful_with_too_short_field);
+    printf("\t     non octal field                   : %d\n", ts->successful_with_non_octal_field);
+    printf("\t     field cut in middle               : %d\n", ts->successful_with_field_cut_in_middle);
+    printf("\t     field null terminated             : %d\n", ts->successful_with_field_not_terminated_null_byte);
+    printf("\t     field with null byte in the middle: %d\n", ts->successful_with_null_byte_in_the_middle);
+    printf("\t     field with special character      : %d\n\n", ts->successful_with_special_character);
+    printf("Success on \n");
+    printf("\t   name field       : %d\n", ts->name_fuzzing_success);
+    printf("\t   mode field       : %d\n", ts->mode_fuzzing_success);
+    printf("\t   uid field        : %d\n", ts->uid_fuzzing_success);
+    printf("\t   gid field        : %d\n", ts->gid_fuzzing_success);
+    printf("\t   size field       : %d\n", ts->size_fuzzing_success);
+    printf("\t   mtime field      : %d\n", ts->mtime_fuzzing_success);
+    printf("\t   checksum field   : %d\n", ts->checksum_fuzzing_success);
+    printf("\t   typeflag field   : %d\n", ts->typeflag_fuzzing_success);
+    printf("\t   linkname field   : %d\n", ts->linkname_fuzzing_success);
+    printf("\t   magic field      : %d\n", ts->magic_fuzzing_success);
+    printf("\t   version field    : %d\n", ts->version_fuzzing_success);
+    printf("\t   uname field      : %d\n", ts->uname_fuzzing_success);
+    printf("\t   gname field      : %d\n", ts->gname_fuzzing_success);
+    printf("\t   end of file field: %d\n\n", ts->end_of_file_fuzzing_success);
 }
 
 /**
@@ -108,51 +139,40 @@ int extract(char* path){ // PROF FUNCTION
         printf("Command not found\n");
         rv = -1;
     }
-    printf("Return value : %d\n", rv);
     return rv;
 }
 
 
 void start_header(tar_header* header) { // TODO : maybe some constants here ?
-    // Reset data of header
-    memset(header, 0, sizeof(tar_header));
 
-    char archive_name[64]; // bold assumption
-    snprintf(archive_name, sizeof(archive_name), "archive_%d.txt", test_status.number_or_tar_created++); // TODO : maybe .bin ?
-    printf("archive name: %s\n", archive_name);
-    snprintf(header->name, sizeof(header->name), "%s", archive_name); // TODO MARCO : hacky fix, needs to find better
-    snprintf(header->mode, sizeof(header->mode), "0007777"); // all permissions
-    snprintf(header->uid, sizeof(header->uid), "0000000");
-    snprintf(header->gid, sizeof(header->gid), "0000000");
+    char archive_name[100];
+    snprintf(archive_name, sizeof(archive_name), "archive_%d.tar", test_status.number_or_tar_created++);
+    char linkname[100] = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    char full_zero[8] = "0000000";
+
+    memset(header, 0, sizeof(tar_header));
+    //printf("archive name: %s\n", archive_name);
+
+    snprintf(header->name, sizeof(header->name), "%s", archive_name);
+    snprintf(header->mode, sizeof(header->mode), "07777"); // all perms (based on constants.h)
+    snprintf(header->uid, sizeof(header->uid),"%s", full_zero);
+    snprintf(header->gid, sizeof(header->gid),"%s", full_zero);
     snprintf(header->size, sizeof(header->size), "%011o", 0); // size needs to be in octal
     snprintf(header->mtime, sizeof(header->mtime), "%011lo", time(NULL)); // set modification time to current time in octal format
-    //checksum at the end
+    //checksum at the end (need all other fields before calculating the checksum)
     header->typeflag = REGTYPE;
-    header->linkname[0] = 0;
+    snprintf(header->linkname, sizeof(header->linkname), "%s", linkname);
     snprintf(header->magic, sizeof(header->magic), TMAGIC);
-    snprintf(header->version, sizeof(header->version) + 1,  TVERSION); //  '+ 1' NEEDED BECAUSE 'NO NULL' FUCK THIS SHIT
-    // TODO understand the warning and maybe fix it : ‘snprintf’ output 3 bytes into a destination of size 2
-    snprintf(header->uname, sizeof(header->uname), "root");
-    snprintf(header->gname, sizeof(header->gname), "root");
-    snprintf(header->devmajor, sizeof(header->devmajor), "0000000");
-    snprintf(header->devminor, sizeof(header->devminor), "0000000");
-    // might require padding at some point, not so sure tbh
+    snprintf(header->version, sizeof(header->version) + 1,  TVERSION); //  '+ 1' is needed because 'no null'
+    snprintf(header->uname, sizeof(header->uname), "Z3US");
+    snprintf(header->gname, sizeof(header->gname), "Z3US");
+    snprintf(header->devmajor, sizeof(header->devmajor),"%s", full_zero);
+    snprintf(header->devminor, sizeof(header->devminor),"%s", full_zero);
+    // might require prefixe and padding at some point, not so sure tbh
     calculate_checksum(header);
 }
 
-
-void change_size(tar_header* header, size_t size) {
-    snprintf(header->size, sizeof(header->size), "%011lo", size); // Octal representation of the number with 0 as prefix : https://linux.die.net/man/3/snprintf
-}
-
-
-
-void change_header_field(char* header_field, char* new_value, size_t size) { // might not be needed but it is wayyyyy prettier
-    strncpy(header_field, new_value, size); // seg fault here
-}
-
-void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) { // maybe need checksum at some point
-
+void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) {
     calculate_checksum(header);
     FILE *fp = fopen("archive.tar", "wb");
     if (fp == NULL) {
@@ -171,13 +191,13 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
             fclose(fp);
             exit(EXIT_FAILURE);
         }
-    if (end_size > 0)
+    if (end_size > 0){
         if (fwrite(end_bytes_buffer, end_size, 1, fp) != 1) {
             perror("Error writing end bytes");
             fclose(fp);
             exit(EXIT_FAILURE);
         }
-
+    }
     if (fclose(fp) != 0) {
         perror("Error closing file");
         exit(EXIT_FAILURE);
@@ -185,18 +205,15 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
 }
 
 
-
-void create_empty_tar(tar_header* header) { // also maybe need checksum at some point
-
+void create_empty_tar(tar_header* header) {
     char end_bytes[END_BYTES];
     memset(end_bytes, 0, END_BYTES);
-
-    create_tar(header, "", 0, end_bytes, END_BYTES); // TODO check if "" == NULL
+    create_tar(header, NULL, 0, end_bytes, END_BYTES);
 }
 
 // DEBUG
 
-void print_header(tar_header* header) { // (oui j'ai passé 2 mins de ma vie à faire cet affichage débile)
+void print_header(tar_header* header) {
     printf("-----Header start-----\n");
     printf("Name:      %s\n", header->name);
     printf("Mode:      %s\n", header->mode);

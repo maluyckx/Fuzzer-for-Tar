@@ -32,7 +32,4 @@ The functions in the file `help.c` that were provided were split into different 
 ## stupido stupido // TODO remove this part
 - probably split every header part into a different file (AKA clean code my G)
 - maybe split files more accordingly
-- makefile : pas oublier le '-o3' quand on aura fini 
 - trouver un soft pour faire des comments automatiques en C
-- FIX LES PUTAINS DE WARNINGS SA MERE
-- need to check the checksum EACH time => do a function for that
