@@ -422,8 +422,6 @@ void fuzz(){
     init_test_status(&test_status);
     printf("path_file : %s\n", path_file);
 
-    // TODO : need to check the checksum each time I think
-
     name_fuzzing();
     mode_fuzzing();
     uid_fuzzing();
