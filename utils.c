@@ -61,7 +61,7 @@ void print_test_status(struct test_status_t *ts) {
  */
 unsigned int calculate_checksum(struct tar_header* entry){
     // use spaces for the checksum bytes while calculating the checksum
-    memset(entry->chksum, ' ', 8);
+    memset(entry->chksum, ' ', sizeof(entry->chksum));
 
     // sum of entire metadata
     unsigned int check = 0;
@@ -172,12 +172,12 @@ void start_header(tar_header* header) { // TODO : maybe some constants here ?
  * @brief Create a tar archive and write it to disk.
  * 
  * @param header The header of the tar archive to create.
- * @param content A pointer to the content to write to the archive.
- * @param content_size The size of the content to write.
+ * @param content_header A pointer to the content to write to the archive.
+ * @param content_header_size The size of the content to write.
  * @param end_bytes_buffer A buffer containing end-of-archive null blocks.
  * @param end_size The size of the end_bytes_buffer.
  */
-void create_tar(tar_header* header, char* content, size_t content_size, char* end_bytes_buffer, size_t end_size) {
+void create_tar(tar_header* header, char* content_header, size_t content_header_size, char* end_data, size_t end_size) {
     calculate_checksum(header);
     FILE *fp = fopen("archive.tar", "wb");
     if (fp == NULL) {
@@ -190,14 +190,14 @@ void create_tar(tar_header* header, char* content, size_t content_size, char* en
         fclose(fp);
         exit(EXIT_FAILURE);
     }
-    if (content_size > 0)
-        if (fwrite(content, content_size, 1, fp) != 1) {
+    if (content_header_size > 0)
+        if (fwrite(content_header, content_header_size, 1, fp) != 1) {
             perror("Error writing content");
             fclose(fp);
             exit(EXIT_FAILURE);
         }
     if (end_size > 0){
-        if (fwrite(end_bytes_buffer, end_size, 1, fp) != 1) {
+        if (fwrite(end_data, end_size, 1, fp) != 1) {
             perror("Error writing end bytes");
             fclose(fp);
             exit(EXIT_FAILURE);
