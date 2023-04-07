@@ -8,7 +8,7 @@
 struct test_status_t test_status;
 
 /**
- * @brief TODO VINCENT
+ * @brief Initiates the test_status_t struct with all values to 0.
  * 
  * @param ts 
  */
@@ -23,8 +23,8 @@ void init_test_status(struct test_status_t *ts) {
  * @param ts Pointer to the test_status_t struct to print.
  */
 void print_test_status(struct test_status_t *ts) {
-    printf("\n\nTest status:\n");
-    printf("Number of trials: %d\n", ts->number_of_tries);
+    printf("\n\nTest status\n");
+    printf("Number of trials : %d\n", ts->number_of_tries);
     printf("Number of success: %d\n\n", ts->number_of_success);
     printf("Success with \n");
     printf("\t     Empty field                       : %d\n", ts->successful_with_empty_field);
@@ -60,7 +60,7 @@ void print_test_status(struct test_status_t *ts) {
  * @param entry: The tar header
  * @return the value of the checksum
  */
-unsigned int calculate_checksum(struct tar_header* entry){
+unsigned int calculate_checksum(struct tar_header* entry){ // PROF FUNCTION
     // use spaces for the checksum bytes while calculating the checksum
     memset(entry->chksum, ' ', sizeof(entry->chksum));
 
@@ -91,7 +91,7 @@ unsigned int calculate_checksum(struct tar_header* entry){
 int extract(char* path){ // PROF FUNCTION
     test_status.number_of_tries++;
 
-    int rv = 0; // return value
+    int rv = 0;
     char cmd[51];
     strncpy(cmd, path, 25);
     cmd[26] = '\0';
@@ -229,7 +229,6 @@ void create_empty_tar(tar_header* header) {
  * 
  * @param header Pointer to a tar_header struct to print.
  */
-
 void print_header(tar_header* header) {
     printf("-----Header start-----\n");
     printf("Name:      %s\n", header->name);

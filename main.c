@@ -9,8 +9,17 @@
 
 static tar_header header; // really bad coding practice but otherwise, I would need to pass the arg to EVERY function in this project
 
-char* path_file; // Workaround to avoid passing the variable as an argument to every function in the program TODO : find a better name lol
+char* path_extractor; // Workaround to avoid passing the variable as an argument to every function in the program
 
+
+/**
+ * @brief This function performs fuzz testing on a given field by applying various test cases to ensure it can handle different scenarios.
+ *        For each test case, the function generates a tar file using the field, extracts it, and checks if the extraction was successful.
+ *        If the extraction was successful, the corresponding test case is marked as passed in the test_status object.
+ * 
+ * @param field_name Pointer to the field to be tested. 
+ * @param field_size Size of the field. 
+ */
 void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // field size is needed in the definition : https://stackoverflow.com/questions/5493281/c-sizeof-a-passed-array
 
@@ -18,7 +27,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     start_header(&header);
     strncpy(field_name, "", field_size);
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_empty_field++;
     }
 
@@ -28,7 +37,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     start_header(&header);
     strncpy(field_name, &not_ascii, field_size); // omega : is represented in Unicode by the code point U+03A9
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_non_ASCII_field++;
     }
 
@@ -37,7 +46,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     start_header(&header);
     strncpy(field_name, non_numeric_field, field_size); // warning is FINE : it is NORMAL that it is too long
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_non_numeric_field++;
     }
 
@@ -48,7 +57,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
         field_name[i] = 'a' + rand() % 26;
     }
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_too_short_field++;
     }
 
@@ -57,7 +66,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     memset(field_name, '9', field_size - 1); 
     field_name[field_size - 1] = 0;
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_non_octal_field++;
     }
 
@@ -66,7 +75,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     memset(field_name, 0, field_size);
     memset(field_name, '1', field_size / 2 );
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_field_cut_in_middle++;
     }
 
@@ -74,16 +83,15 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     start_header(&header);
     memset(field_name, '5', field_size);
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_field_not_terminated_null_byte++;
     }
 
-    // TODO : avoir plusieurs champs dans le status de test?
     // Test 8 : Null byte in the middle of the field (Part 1)
     start_header(&header);
     memset(field_name, 0, field_size);
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_null_byte_in_the_middle++;
     }
 
@@ -93,7 +101,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     memset(field_name, 0, field_size);
     memset(field_name, '0', field_size / 2);
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_null_byte_in_the_middle++;
     }
 
@@ -103,7 +111,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     memset(field_name, '0', field_size - 1);
     field_name[field_size - 1] = 0;
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_null_byte_in_the_middle++;
     }
 
@@ -113,7 +121,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     memset(field_name, 0, field_size - 1);
     field_name[field_size - 1] = '0';
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.successful_with_null_byte_in_the_middle++;
     }
 
@@ -126,7 +134,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
         memset(field_name + first_term, ' ', field_size - first_term); // replace '\0' by ' '
     }
     create_empty_tar(&header);
-    if (extract(path_file) == 1) {
+    if (extract(path_extractor) == 1) {
         test_status.success_with_no_null_bytes++;
     }
 
@@ -137,15 +145,16 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
         memset(field_name, special_chars[i], field_size);
         field_name[field_size - 1] = 0;
         create_empty_tar(&header);
-        if (extract(path_file) == 1) {
+        if (extract(path_extractor) == 1) {
             test_status.successful_with_special_character++;
         }
     }
-
-    // TODO : Vincent
-    // 2x 512 bytes filled with 0s should be present but not mandatory
 }
 
+/**
+ * @brief Perform general fuzzing on the "name" field of the tar header.
+ * 
+ */
 void name_fuzzing(){
 
     printf("\n~~~ NAME Header Fuzzing ~~~\n");
@@ -157,6 +166,11 @@ void name_fuzzing(){
     printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+/**
+ * @brief Perform general fuzzing on the "mode" field of the tar header.
+ *        It iterates over the possible mode values defined in "constants.h"
+ * 
+ */
 void mode_fuzzing(){
 
     printf("\n~~~ MODE Header Fuzzing ~~~\n");
@@ -172,7 +186,7 @@ void mode_fuzzing(){
         snprintf(mode, sizeof(header.mode), "%o", modes[i]);
         strncpy(header.mode, mode, sizeof(header.mode));
         create_empty_tar(&header);
-        extract(path_file);
+        extract(path_extractor);
     }
 
     // The code below tries to brute-force every possible value from 0000 to 9999.
@@ -184,7 +198,7 @@ void mode_fuzzing(){
         snprintf(mode, sizeof(header.mode), "%o", i);
         strncpy(header.mode, mode, sizeof(header.mode));
         create_empty_tar(&header);
-        extract(path_file);
+        extract(path_extractor);
     }
     */
 
@@ -193,6 +207,10 @@ void mode_fuzzing(){
     
 }
 
+/**
+ * @brief Perform general fuzzing on the "uid" field of the tar header.
+ * 
+ */
 void uid_fuzzing(){
 
     printf("\n~~~ UID Header Fuzzing ~~~\n");
@@ -204,7 +222,10 @@ void uid_fuzzing(){
     printf("\n~~~ UID Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
     
 }
-
+/**
+ * @brief Perform general fuzzing on the "gid" field of the tar header.
+ * 
+ */
 void gid_fuzzing(){
     
     printf("\n~~~ GID Header Fuzzing ~~~\n");
@@ -216,6 +237,11 @@ void gid_fuzzing(){
     printf("\n~~~ GID Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+
+/**
+ * @brief Perform general fuzzing on the "size" field of the tar header.
+ *        This function generates random values for the "size" field and creates headers with those values.
+ */
 void size_fuzzing(){
 
     printf("\n~~~ SIZE Header Fuzzing ~~~\n");
@@ -239,22 +265,37 @@ void size_fuzzing(){
         memset(end_data, 0, HEADER_LENGTH);
         snprintf(header.size, sizeof(header.size), "%o", possible_size[i]);
         create_tar(&header, content_header, content_header_size, end_data, HEADER_LENGTH);
-        extract(path_file);
+        extract(path_extractor);
     }
 
     test_status.size_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ SIZE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+
+/**
+ * @brief Creates a tar header with the specified time value by converting the time
+ *        into a string and copying it into the 'mtime' field of the header.
+ *        Then creates an empty tar file with the header and extracts it to the filesystem.
+ * 
+ * @param time The time value to be set in the header.
+ */
 void create_header_with_time(time_t time) {
     char time_string[sizeof(header.mtime)];
     start_header(&header);
     snprintf(time_string, sizeof(header.mtime), "%lo", time);
     strncpy(header.mtime, time_string, sizeof(header.mtime));
     create_empty_tar(&header);
-    extract(path_file);
+    extract(path_extractor);
 }
 
+/**
+ * @brief Perform general fuzzing on the "mtime" field of the tar header.
+ *        The function tests various scenarios :
+ *        - Test with the minimum and maximum value for int and long long int.
+ *        - Test with various time intervals such as 5 minutes before/after 1970, 1 year ago,
+ *          current time and 1 month in the future.
+ */
 void mtime_fuzzing() {
     printf("\n~~~ MTIME Header Fuzzing ~~~\n");
 
@@ -295,7 +336,9 @@ void mtime_fuzzing() {
     printf("\n~~~ MTIME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
-
+/**
+ * @brief Perform general fuzzing on the "chksum" field of the tar header.
+ */
 void chksum_fuzzing(){
     printf("\n~~~ CHECKSUM Header Fuzzing ~~~\n");
     int previous_success = test_status.number_of_success;
@@ -306,6 +349,11 @@ void chksum_fuzzing(){
     printf("\n~~~ CHECKSUM Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+
+/**
+ * @brief Brute-force every possible value of the "typeflag" field, since it is only one byte.
+ *        In addition to positive values, we also try negative values and non-ASCII characters.
+ */
 void typeflag_fuzzing(){
 
     printf("\n~~~ TYPEFLAG Header Fuzzing ~~~\n");
@@ -316,26 +364,30 @@ void typeflag_fuzzing(){
         start_header(&header);
         header.typeflag = (char) i;
         create_empty_tar(&header);
-        extract(path_file);
+        extract(path_extractor);
     }
 
     // Test with negative values
     start_header(&header);
     header.typeflag = -1;
     create_empty_tar(&header);
-    extract(path_file);
+    extract(path_extractor);
 
     // Test with non-ASCII characters
     start_header(&header);
     header.typeflag = '日'; // warning about overflow is NORMAL, that is what we want
     create_empty_tar(&header);
-    extract(path_file);
+    extract(path_extractor);
 
 
     test_status.typeflag_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ TYPEFLAG Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+
+/**
+ * @brief Perform general fuzzing on the "linkname" field of the tar header.
+ */
 void linkname_fuzzing(){
     printf("\n~~~ LINKNAME Header Fuzzing ~~~\n");
     int previous_success = test_status.number_of_success;
@@ -346,6 +398,9 @@ void linkname_fuzzing(){
     printf("\n~~~ LINKNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+/**
+ * @brief Perform general fuzzing on the "magic" field of the tar header.
+ */
 void magic_fuzzing(){
 
     printf("\n~~~ MAGIC Header Fuzzing ~~~\n");
@@ -357,6 +412,11 @@ void magic_fuzzing(){
     printf("\n~~~ MAGIC Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+/**
+ * @brief Perform general fuzzing on the "version" field of the tar header.
+ *        Additionally, since the field is only 2 bytes long and in octal format,
+ *        we brute-force every possible value and try negative values too. 
+ */
 void version_fuzzing(){
 
     printf("\n~~~ VERSION Header Fuzzing ~~~\n");
@@ -375,7 +435,7 @@ void version_fuzzing(){
             start_header(&header);
             strncpy(header.version, octal, sizeof(header.version));
             create_empty_tar(&header);
-            extract(path_file);
+            extract(path_extractor);
         }
     }
 
@@ -388,7 +448,7 @@ void version_fuzzing(){
             start_header(&header);
             strncpy(header.version, octal, sizeof(header.version));
             create_empty_tar(&header);
-            extract(path_file);
+            extract(path_extractor);
         }
     }
  
@@ -396,6 +456,10 @@ void version_fuzzing(){
     printf("\n~~~ VERSION Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
+/**
+ * @brief Perform general fuzzing on the "uname" field of the tar header.
+ * 
+ */
 void uname_fuzzing(){
 
     printf("\n~~~ UNAME Header Fuzzing ~~~\n");
@@ -408,6 +472,10 @@ void uname_fuzzing(){
 
 }
 
+/**
+ * @brief Perform general fuzzing on the "gname" field of the tar header.
+ * 
+ */
 void gname_fuzzing(){
 
     printf("\n~~~ GNAME Header Fuzzing ~~~\n");
@@ -420,6 +488,11 @@ void gname_fuzzing(){
     
 }
 
+/**
+ * @brief This function performs fuzzing tests on the size of the data at the end of a tar file. 
+ *        It generates tar files with varying sizes of end data and extracts them to verify that the program
+ *        can handle such files.
+ */
 void end_of_file_fuzzing() {
 
     printf("\n~~~ End of File Fuzzing ~~~\n");
@@ -437,12 +510,12 @@ void end_of_file_fuzzing() {
     while (i < sizeof_array) {
         start_header(&header);
         create_tar(&header, NULL, 0, end_data, end_data_sizes[i]); // Create a tar file with no file content
-        extract(path_file);
+        extract(path_extractor);
 
         start_header(&header);
-        snprintf(header.size, sizeof(header.size), "%011o", content_header_size);
+        snprintf(header.size, sizeof(header.size), "%o", content_header_size);
         create_tar(&header, content_header, content_header_size, end_data, end_data_sizes[i]); // Create a tar file with the dummy text
-        extract(path_file);
+        extract(path_extractor);
         i++;
     }
 
@@ -451,15 +524,25 @@ void end_of_file_fuzzing() {
     printf("\n~~~ End of File Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
-
+/**
+ * @brief Removes all files in the current directory except for the relevant files and directories.
+ */
 void remove_files() {
     // https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
 
+    // To add files, use the "! -name" syntax
+    // Example : ! -name '<name_of_file_that_cannot_be_deleted>'
+
+    // To add directories, use the "! -path" syntax
+    // Example : ! -path './<directory>' ! -path './<directory>/*' 
+
     system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); 
-    system("./rm_success.sh");
+    system("./rm_success.sh"); // TODO comment
 }
 
-
+/**
+ * @brief performs fuzz testing on various tar fields by calling specific functions for each field
+ */
 void fuzzing(){
     init_test_status(&test_status);
 
@@ -491,6 +574,6 @@ int main(int argc, char* argv[]){
         printf("Example : ./fuzzer ./extractor");
         return -1;
     }
-    path_file = argv[1];
+    path_extractor = argv[1];
     fuzzing(); 
 }
