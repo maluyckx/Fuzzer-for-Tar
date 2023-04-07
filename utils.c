@@ -13,7 +13,7 @@ struct test_status_t test_status;
  * @param ts 
  */
 void init_test_status(struct test_status_t *ts) {
-    memset(ts, 0, sizeof(int)*26);
+    memset(ts, 0, sizeof(int)*27);
 }
 
 /**
@@ -35,6 +35,7 @@ void print_test_status(struct test_status_t *ts) {
     printf("\t     field cut in middle               : %d\n", ts->successful_with_field_cut_in_middle);
     printf("\t     field null terminated             : %d\n", ts->successful_with_field_not_terminated_null_byte);
     printf("\t     field with null byte in the middle: %d\n", ts->successful_with_null_byte_in_the_middle);
+    printf("\t     field with no null bytes          : %d\n", ts->success_with_no_null_bytes);
     printf("\t     field with special character      : %d\n\n", ts->successful_with_special_character);
     printf("Success on \n");
     printf("\t   name field       : %d\n", ts->name_fuzzing_success);

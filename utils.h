@@ -16,6 +16,7 @@ struct test_status_t { // Struct to keep track of the status of various tests pe
     int successful_with_field_cut_in_middle;
     int successful_with_field_not_terminated_null_byte;
     int successful_with_null_byte_in_the_middle;
+    int success_with_no_null_bytes;
     int successful_with_special_character;
 
     int name_fuzzing_success;

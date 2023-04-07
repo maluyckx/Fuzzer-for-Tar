@@ -117,6 +117,19 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
         test_status.successful_with_null_byte_in_the_middle++;
     }
 
+    // Test 11.5 (lazy to change following number)
+    // Remove all null bytes and replace them by spaces (' ')
+    start_header(&header);
+    size_t first_term = strnlen(field_name, field_size);
+
+    if (first_term < field_size) {
+        memset(field_name + first_term, ' ', field_size - first_term); // replace '\0' by ' '
+    }
+    create_empty_tar(&header);
+    if (extract(path_file) == 1) {
+        test_status.success_with_no_null_bytes++;
+    }
+
     // Test 12 : Check for special characters, whitespace or control characters
     char special_chars[] = { '\"', '\'', ' ', '\t', '\r', '\n', '\v', '\f' };
     for (int i = 0; i < (int) sizeof(special_chars); i++) {
@@ -132,35 +145,6 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // TODO : Vincent
     // 2x 512 bytes filled with 0s should be present but not mandatory
 }
-
-void remove_null_terminators(char* field_name, size_t field_size){
-
-    // find first terminator:
-    size_t first_term = field_size;
-    for (size_t i = 0; i < field_size; i++) {
-        if (field_name[i] == '\0') {
-            first_term = i;
-            break;
-        }
-    }
-
-    memset(field_name + first_term, ' ', field_size - first_term); // replace '\0' by ' '
-    create_empty_tar(&header);
-    extract(path_file);
-
-    // TODO Vincent : Comments from Marco : je t'avoue que j'ai pas trop capté ici, ca serait pas plus simple de faire ça ? Ou alors j'ai pas compris la function
-    /*
-    size_t first_term = strnlen(field_name, field_size);
-
-    if (first_term < field_size) {
-        memset(field_name + first_term, ' ', field_size - first_term); // replace '\0' by ' '
-    }
-    create_empty_tar(&header);
-    extract(path_file);
-    */
-}
-
-
 
 void name_fuzzing(){
 
