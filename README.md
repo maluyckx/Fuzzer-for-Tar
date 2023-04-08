@@ -53,7 +53,7 @@ The functions in the file `help.c` that were provided were split into different 
 ## How to use the program
 
 1) Use `make` to compile the program.
-2) Run the program with `./fuzzer <path to the tar extractor>`. For example: `./fuzzer ./extractor`
+2) Run the program with `./fuzzer <path to the tar extractor>`. For example: `./fuzzer ./src/extractor`
 
 ## Useful links used
 - https://www.gnu.org/software/tar/manual/html_node/Standard.html

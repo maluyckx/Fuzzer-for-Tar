@@ -25,7 +25,7 @@ void remove_files() {
     // To add directories, use the "! -path" syntax
     // Example : ! -path './<directory>' ! -path './<directory>/*' 
 
-    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); 
+    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './src' ! -path './src/*' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); 
     system("./rm_success.sh"); // TODO comment
 }
 
@@ -173,6 +173,14 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
         if (extract(path_extractor) == 1) {
             test_status.successful_with_special_character++;
         }
+    }
+    // Test 13 : Negative value
+    start_header(&header);
+    strncpy(field_name, "-1", field_size);
+    create_empty_tar(&header);
+    extract(path_extractor);
+    if (extract(path_extractor) == 1) {
+        test_status.successful_with_negative_value++;
     }
 }
 

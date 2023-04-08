@@ -2,8 +2,8 @@ CC = gcc
 CFLAGS = -Wall -Wextra -o3
 
 TARGET = fuzzer
-SRC = main.c utils.c
-HEADER = constants.h utils.h
+SRC = src/main.c src/utils.c
+HEADER = src/constants.h src/utils.h
 
 .PHONY: all clean
 
