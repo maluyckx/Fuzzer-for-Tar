@@ -61,7 +61,3 @@ The functions in the file `help.c` that were provided were split into different 
 ## Authors : Matricule (ULB)
 - Luyckx Marco : 496283
 - Vanmuysewinkel Vincent : 489399
-
-## stupido stupido // TODO remove this part
-- probably split every header part into a different file (AKA clean code my G)
-- maybe split files more accordingly

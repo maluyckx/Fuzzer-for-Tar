@@ -10,7 +10,7 @@ struct test_status_t test_status;
 /**
  * @brief Initiates the test_status_t struct with all values to 0.
  * 
- * @param ts 
+ * @param ts Pointer to the test_status_t struct to print.
  */
 void init_test_status(struct test_status_t *ts) {
     memset(ts, 0, sizeof(int)*27);
@@ -56,7 +56,7 @@ void print_test_status(struct test_status_t *ts) {
 
 /**
  * @brief Computes the checksum for a tar header and encode it on the header
- *        This function was taken for the 'help.c' file that was provided.
+ *        This function was taken from the 'help.c' file that was provided.
  * @param entry: The tar header
  * @return the value of the checksum
  */
@@ -82,7 +82,7 @@ unsigned int calculate_checksum(struct tar_header* entry){ // PROF FUNCTION
 /**
  * @brief Launches another executable given as argument,
  *        parses its output and check whether or not it matches "*** The program has crashed ***".
- *        This function was taken for the 'help.c' file that was provided.
+ *        This function was taken from the 'help.c' file that was provided.
  * @param path the path to the executable
  * @return -1 if the executable cannot be launched,
  *          0 if it is launched but does not print "*** The program has crashed ***",
@@ -141,7 +141,7 @@ int extract(char* path){ // PROF FUNCTION
  *
  * @param header The tar header struct to be initialized.
  */
-void start_header(tar_header* header) { // TODO : maybe some constants here ?
+void start_header(tar_header* header) {
 
     char archive_name[100];
     snprintf(archive_name, sizeof(archive_name), "archive_%d.tar", test_status.number_or_tar_created++);
@@ -183,30 +183,30 @@ void create_tar(tar_header* header, char* content_header, size_t content_header_
     FILE *fp = fopen("archive.tar", "wb");
     if (fp == NULL) {
         perror("Error opening file");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
 
     if (fwrite(header, sizeof(tar_header), 1, fp) != 1) {
         perror("Error writing header");
         fclose(fp);
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
     if (content_header_size > 0)
         if (fwrite(content_header, content_header_size, 1, fp) != 1) {
             perror("Error writing content");
             fclose(fp);
-            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
         }
     if (end_size > 0){
         if (fwrite(end_data, end_size, 1, fp) != 1) {
             perror("Error writing end bytes");
             fclose(fp);
-            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
         }
     }
     if (fclose(fp) != 0) {
         perror("Error closing file");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
 }
 
@@ -218,9 +218,9 @@ void create_tar(tar_header* header, char* content_header, size_t content_header_
  * @param header A pointer to the header of the tar archive to create.
  */
 void create_empty_tar(tar_header* header) {
-    char end_bytes[END_BYTES];
-    memset(end_bytes, 0, END_BYTES);
-    create_tar(header, NULL, 0, end_bytes, END_BYTES);
+    char end_data[END_BYTES];
+    memset(end_data, 0, END_BYTES);
+    create_tar(header, NULL, 0, end_data, END_BYTES);
 }
 
 

@@ -12,6 +12,24 @@ static tar_header header; // really bad coding practice but otherwise, I would n
 char* path_extractor; // Workaround to avoid passing the variable as an argument to every function in the program
 
 
+
+/**
+ * @brief Removes all files in the current directory except for the relevant files and directories.
+ */
+void remove_files() {
+    // https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
+
+    // To add files, use the "! -name" syntax
+    // Example : ! -name '<name_of_file_that_cannot_be_deleted>'
+
+    // To add directories, use the "! -path" syntax
+    // Example : ! -path './<directory>' ! -path './<directory>/*' 
+
+    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); 
+    system("./rm_success.sh"); // TODO comment
+}
+
+
 /**
  * @brief This function performs fuzz testing on a given field by applying various test cases to ensure it can handle different scenarios.
  *        For each test case, the function generates a tar file using the field, extracts it, and checks if the extraction was successful.
@@ -23,6 +41,14 @@ char* path_extractor; // Workaround to avoid passing the variable as an argument
 void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // field size is needed in the definition : https://stackoverflow.com/questions/5493281/c-sizeof-a-passed-array
 
+    /* Every test has this form :
+        1) Reset the header to the default values;
+        2) Make some changes in the field that you are testing;
+        3) Create the corresponding tar (with the changes that you just made);
+        4) Extract the tar and verify if it crashes.    
+    */
+
+
     // Test 1 : Empty field
     start_header(&header);
     strncpy(field_name, "", field_size);
@@ -32,7 +58,6 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     }
 
     // Test 2 : Non-ASCII field
-
     char not_ascii = 'Ω'; // warning about overflow is NORMAL, that is what we want
     start_header(&header);
     strncpy(field_name, &not_ascii, field_size); // omega : is represented in Unicode by the code point U+03A9
@@ -98,8 +123,8 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // Test 9 : Null byte in the middle of the field (Part 2)
     // Set the first half of field_name to contain null bytes and the second half to '0'
     start_header(&header);
-    memset(field_name, 0, field_size);
-    memset(field_name, '0', field_size / 2);
+    memset(field_name, 0, field_size / 2);
+    memset(&field_name[field_size / 2], '0', field_size / 2);
     create_empty_tar(&header);
     if (extract(path_extractor) == 1) {
         test_status.successful_with_null_byte_in_the_middle++;
@@ -139,7 +164,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     }
 
     // Test 12 : Check for special characters, whitespace or control characters
-    char special_chars[] = { '\"', '\'', ' ', '\t', '\r', '\n', '\v', '\f' };
+    char special_chars[] = { '\"', '\'', ' ', '\t', '\r', '\n', '\v', '\f'};
     for (int i = 0; i < (int) sizeof(special_chars); i++) {
         start_header(&header);
         memset(field_name, special_chars[i], field_size);
@@ -256,15 +281,15 @@ void size_fuzzing(){
     int possible_size[number_of_try];
     srand(time(NULL));
     for(int i = 0; i < number_of_try; i++){
-        possible_size[i] = rand() % HEADER_LENGTH;
+        possible_size[i] = rand() % BLOCK_SIZE;
     }
 
     for (int i = 0; i < number_of_try; i++) { // TODO comprendre pourquoi ça marche aussi bien wtf
         start_header(&header);
-        char end_data[HEADER_LENGTH];
-        memset(end_data, 0, HEADER_LENGTH);
+        char end_data[BLOCK_SIZE];
+        memset(end_data, 0, BLOCK_SIZE);
         snprintf(header.size, sizeof(header.size), "%o", possible_size[i]);
-        create_tar(&header, content_header, content_header_size, end_data, HEADER_LENGTH);
+        create_tar(&header, content_header, content_header_size, end_data, BLOCK_SIZE);
         extract(path_extractor);
     }
 
@@ -378,7 +403,6 @@ void typeflag_fuzzing(){
     header.typeflag = '日'; // warning about overflow is NORMAL, that is what we want
     create_empty_tar(&header);
     extract(path_extractor);
-
 
     test_status.typeflag_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ TYPEFLAG Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
@@ -519,33 +543,29 @@ void end_of_file_fuzzing() {
         i++;
     }
 
-
     test_status.end_of_file_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ End of File Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
-/**
- * @brief Removes all files in the current directory except for the relevant files and directories.
- */
-void remove_files() {
-    // https://www.tecmint.com/delete-all-files-in-directory-except-one-few-file-extensions/
-
-    // To add files, use the "! -name" syntax
-    // Example : ! -name '<name_of_file_that_cannot_be_deleted>'
-
-    // To add directories, use the "! -path" syntax
-    // Example : ! -path './<directory>' ! -path './<directory>/*' 
-
-    system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); 
-    system("./rm_success.sh"); // TODO comment
-}
 
 /**
- * @brief performs fuzz testing on various tar fields by calling specific functions for each field
+ * @brief performs fuzz testing on various tar fields by calling specific functions for each field.
+ * 
+ * @param argc 
+ * @param argv  
  */
-void fuzzing(){
+int main(int argc, char* argv[]){
+    if (argc != 2) {
+        printf("Invalid number of arguments.\n");
+        printf("This is a valid command : ./fuzzer <path to the tar extractor>");
+        printf("Example : ./fuzzer ./extractor");
+        return -1;
+    }
+    path_extractor = argv[1];
+
     init_test_status(&test_status);
 
+    printf("\n~~~ STARTING Fuzzing ~~~\n");
     name_fuzzing();
     mode_fuzzing();
     uid_fuzzing();
@@ -560,20 +580,9 @@ void fuzzing(){
     uname_fuzzing();
     gname_fuzzing();
     end_of_file_fuzzing();
+    printf("\n~~~ Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 
     print_test_status(&test_status);
 
     remove_files();
-}
-
-
-int main(int argc, char* argv[]){
-    if (argc != 2) {
-        printf("Invalid number of arguments.\n");
-        printf("This is a valid command : ./fuzzer <path to the tar extractor>");
-        printf("Example : ./fuzzer ./extractor");
-        return -1;
-    }
-    path_extractor = argv[1];
-    fuzzing(); 
 }

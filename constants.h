@@ -63,6 +63,7 @@ typedef struct tar_header{        /* byte offset */
 // OUR CONST
 
 #define HEADER_LENGTH 512
-#define END_BYTES 1024
+#define BLOCK_SIZE 512
+#define END_BYTES 1024 // "At the end of the archive there are two 512-bytes blocks filled with binary zeros as an end-of-file marker"
 
 #endif
