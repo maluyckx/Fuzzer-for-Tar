@@ -301,6 +301,16 @@ void size_fuzzing(){
         extract(path_extractor);
     }
 
+    // test negative size
+    start_header(&header);
+    snprintf(header.size, sizeof(header.size), "%d", INT_MIN);
+    char end_data[END_BYTES];
+    memset(end_data, 0, END_BYTES);
+    create_tar(&header, content_header, content_header_size, end_data, END_BYTES);
+    if (extract(path_extractor) == 1)
+        test_status.successful_with_negative_value++;
+
+
     test_status.size_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ SIZE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
