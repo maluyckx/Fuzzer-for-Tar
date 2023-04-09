@@ -49,4 +49,6 @@ void start_header(tar_header* header);
 
 extern struct test_status_t test_status;
 
+extern int update_checksum;
+
 #endif

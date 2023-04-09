@@ -5,6 +5,8 @@
 
 #include "utils.h"
 
+int update_checksum = 1;
+
 struct test_status_t test_status;
 
 /**
@@ -167,12 +169,13 @@ void start_header(tar_header* header) {
     snprintf(header->devmajor, sizeof(header->devmajor),"%s", full_zero);
     snprintf(header->devminor, sizeof(header->devminor),"%s", full_zero);
     // might require prefixe and padding at some point, not so sure tbh
-    calculate_checksum(header);
+    if (update_checksum == 1)
+        calculate_checksum(header);
 }
 
 /**
  * @brief Create a tar archive and write it to disk.
- * 
+ *
  * @param header The header of the tar archive to create.
  * @param content_header A pointer to the content to write to the archive.
  * @param content_header_size The size of the content to write.
@@ -180,7 +183,8 @@ void start_header(tar_header* header) {
  * @param end_size The size of the end_bytes_buffer.
  */
 void create_tar(tar_header* header, char* content_header, size_t content_header_size, char* end_data, size_t end_size) {
-    calculate_checksum(header);
+    if (update_checksum == 1)
+        calculate_checksum(header);
     FILE *fp = fopen("archive.tar", "wb");
     if (fp == NULL) {
         perror("Error opening file");

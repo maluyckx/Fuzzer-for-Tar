@@ -310,7 +310,6 @@ void size_fuzzing(){
     if (extract(path_extractor) == 1)
         test_status.successful_with_negative_value++;
 
-
     test_status.size_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ SIZE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
@@ -385,9 +384,20 @@ void mtime_fuzzing() {
 void chksum_fuzzing(){
     printf("\n~~~ CHECKSUM Header Fuzzing ~~~\n");
     int previous_success = test_status.number_of_success;
+    update_checksum = 0; // interrupts the process of having the right checksum for the header
 
     fuzzing_on_precise_field(header.chksum, sizeof(header.chksum));
 
+    char content_header[] = "https://www.youtube.com/watch?v=xvFZjo5PgG0"; // dummy text
+    int content_header_size = sizeof(content_header);
+    char end_data[END_BYTES];
+    start_header(&header);
+    memset(&header.chksum, 0, 8);
+    create_tar(&header, content_header, content_header_size, end_data, END_BYTES);
+    extract(path_extractor);
+
+
+    update_checksum = 1;
     test_status.checksum_fuzzing_success += test_status.number_of_success - previous_success;
     printf("\n~~~ CHECKSUM Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
