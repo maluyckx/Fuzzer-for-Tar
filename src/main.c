@@ -176,7 +176,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     }
     // Test 13 : Negative value
     start_header(&header);
-    strncpy(field_name, "-1", field_size);
+    snprintf(field_name, field_size, "%d", INT_MIN);
     create_empty_tar(&header);
     extract(path_extractor);
     if (extract(path_extractor) == 1) {
