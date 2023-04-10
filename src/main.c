@@ -388,7 +388,7 @@ void chksum_fuzzing(){
 
     fuzzing_on_precise_field(header.chksum, sizeof(header.chksum));
 
-    char content_header[] = "https://www.youtube.com/watch?v=xvFZjo5PgG0"; // dummy text
+    char content_header[] = "https://www.youtube.com/shorts/AcOQeKPX-Hs"; // dummy text
     int content_header_size = sizeof(content_header);
     char end_data[END_BYTES];
     start_header(&header);
