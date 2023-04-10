@@ -57,6 +57,7 @@ The functions in the file `help.c` that were provided were split into different 
 
 ## Useful links used
 - https://www.gnu.org/software/tar/manual/html_node/Standard.html
+- https://theasciicode.com.ar/
 
 ## Authors : Matricule (ULB)
 - Luyckx Marco : 496283

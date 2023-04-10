@@ -109,6 +109,7 @@ int extract(char* path){ // PROF FUNCTION
         printf("No output\n");
         goto finally;
     }
+    printf(buf);
     if(strncmp(buf, "*** The program has crashed ***\n", 33)) {
         printf("Not the crash message\n");
         goto finally;
@@ -169,8 +170,9 @@ void start_header(tar_header* header) {
     snprintf(header->devmajor, sizeof(header->devmajor),"%s", full_zero);
     snprintf(header->devminor, sizeof(header->devminor),"%s", full_zero);
     // might require prefixe and padding at some point, not so sure tbh
-    if (update_checksum == 1)
+    if (update_checksum == 1){
         calculate_checksum(header);
+    }
 }
 
 /**

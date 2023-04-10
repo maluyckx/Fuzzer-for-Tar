@@ -81,6 +81,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     for (int i = 0; i < (int) field_size - 1; i++) { // Generate "field_size - 1" random letters 
         field_name[i] = 'a' + rand() % 26;
     }
+    field_name[field_size] = '\0';
     create_empty_tar(&header);
     if (extract(path_extractor) == 1) {
         test_status.successful_with_too_short_field++;
@@ -163,8 +164,8 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
         test_status.success_with_no_null_bytes++;
     }
 
-    // Test 12 : Check for special characters, whitespace or control characters
-    char special_chars[] = { '\"', '\'', ' ', '\t', '\r', '\n', '\v', '\f'};
+    // Test 12 : Check for special characters, whitespace or control characters (see ASCII link in README)
+    char special_chars[] = { '\"', '\'', ' ', '\t', '\r', '\n', '\v', '\f', '\b'};
     for (int i = 0; i < (int) sizeof(special_chars); i++) {
         start_header(&header);
         memset(field_name, special_chars[i], field_size);
@@ -174,6 +175,18 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
             test_status.successful_with_special_character++;
         }
     }
+    /*
+    // Test 12.5 : Control characters
+    start_header(&header);
+    for (int c = 0; c <= 40; c++) {
+        memset(field_name, c, 1);
+        create_empty_tar(&header);
+        if (extract(path_extractor) == 1) {
+            test_status.successful_with_special_character++;
+        }
+    }
+    */
+
     // Test 13 : Negative value
     start_header(&header);
     snprintf(field_name, field_size, "%d", INT_MIN);
@@ -292,7 +305,7 @@ void size_fuzzing(){
         possible_size[i] = rand() % BLOCK_SIZE;
     }
 
-    for (int i = 0; i < number_of_try; i++) { // TODO comprendre pourquoi ça marche aussi bien wtf
+    for (int i = 0; i < number_of_try; i++) {
         start_header(&header);
         char end_data[BLOCK_SIZE];
         memset(end_data, 0, BLOCK_SIZE);
@@ -392,7 +405,7 @@ void chksum_fuzzing(){
     int content_header_size = sizeof(content_header);
     char end_data[END_BYTES];
     start_header(&header);
-    memset(&header.chksum, 0, 8);
+    memset(&header.chksum, 0, 1);
     create_tar(&header, content_header, content_header_size, end_data, END_BYTES);
     extract(path_extractor);
 
