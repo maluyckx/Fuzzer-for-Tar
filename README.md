@@ -31,6 +31,7 @@ Success with
              field with null byte in the middle: X
              field with no null bytes          : X
              field with special character      : X
+             field with negative value         : X
 
 Success on 
            name field       : X

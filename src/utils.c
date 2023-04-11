@@ -109,7 +109,6 @@ int extract(char* path){ // PROF FUNCTION
         printf("No output\n");
         goto finally;
     }
-    printf(buf);
     if(strncmp(buf, "*** The program has crashed ***\n", 33)) {
         printf("Not the crash message\n");
         goto finally;
