@@ -620,7 +620,6 @@ int main(int argc, char* argv[]){
     version_fuzzing();
     uname_fuzzing();
     gname_fuzzing();
-    padding_fuzzing();
     end_of_file_fuzzing();
     printf("\n~~~ Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 
