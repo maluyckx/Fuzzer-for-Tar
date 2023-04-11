@@ -554,20 +554,6 @@ void gname_fuzzing(){
 }
 
 /**
- * @brief Performs general fuzzing on the "padding" field of the tar header.
- */
-void padding_fuzzing() {
-    printf("\n~~~ GNAME Header Fuzzing ~~~\n");
-
-
-    fuzzing_on_precise_field(header.padding, sizeof(header.padding));
-
-
-    printf("\n~~~ GNAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
-
-}
-
-/**
  * @brief This function performs fuzzing tests on the size of the data at the end of a tar file. 
  *        It generates tar files with varying sizes of end data and extracts them to verify that the program
  *        can handle such files.
