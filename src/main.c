@@ -98,8 +98,6 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     // Test 6 : Field cut in the middle
     start_header(&header);
-    // memset(field_name, 0, field_size);
-    // memset(field_name, '1', field_size / 2 );
     memset(field_name, 0, field_size / 2);
     memset(&field_name[field_size / 2], '1', field_size / 2);
     create_empty_tar(&header);
