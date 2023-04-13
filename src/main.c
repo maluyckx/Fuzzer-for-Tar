@@ -26,7 +26,7 @@ void remove_files() {
     // Example : ! -path './<directory>' ! -path './<directory>/*' 
 
     system("find . ! -name '.gitignore' ! -name 'constants.h' ! -name 'extractor' ! -name 'extractor_v2' ! -name 'fuzzer' ! -name 'fuzzer_statement.pdf' ! -name 'help.c' ! -name 'main.c' ! -name 'Makefile' ! -name 'README.md' ! -name 'rm_success.sh' ! -name 'utils.c' ! -name 'utils.h' ! -name 'success_*' ! -path './.' ! -path './..' ! -path './src' ! -path './src/*' ! -path './.git' ! -path './.idea' ! -path './.git/*' ! -path './.idea/*' -delete"); 
-    system("./rm_success.sh"); // TODO comment
+    //system("./rm_success.sh");
 }
 
 
@@ -81,7 +81,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     for (int i = 0; i < (int) field_size - 1; i++) { // Generate "field_size - 1" random letters 
         field_name[i] = 'a' + rand() % 26;
     }
-    field_name[field_size] = '\0';
+    field_name[field_size] = 0;
     create_empty_tar(&header);
     if (extract(path_extractor) == 1) {
         test_status.successful_with_too_short_field++;
@@ -98,8 +98,10 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     // Test 6 : Field cut in the middle
     start_header(&header);
-    memset(field_name, 0, field_size);
-    memset(field_name, '1', field_size / 2 );
+    // memset(field_name, 0, field_size);
+    // memset(field_name, '1', field_size / 2 );
+    memset(field_name, 0, field_size / 2);
+    memset(&field_name[field_size / 2], '1', field_size / 2);
     create_empty_tar(&header);
     if (extract(path_extractor) == 1) {
         test_status.successful_with_field_cut_in_middle++;
@@ -209,7 +211,7 @@ void name_fuzzing(){
     fuzzing_on_precise_field(header.name, sizeof(header.name));
 
     test_status.name_fuzzing_success += test_status.number_of_success - previous_success;
-    printf("\n~~~ MODE Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
+    printf("\n~~~ NAME Header Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 /**
@@ -236,7 +238,7 @@ void mode_fuzzing(){
     }
 
     // The code below tries to brute-force every possible value from 0000 to 9999.
-    // We decided to not keep it since it did not bring any good result and it was taking too much time.
+    // We decided to not keep it since it did not bring any good result and it was taking a lot of time.
     /*
     for (int i = 0; i < 10000; i++) {
         char mode[sizeof(header.mode)];
@@ -317,9 +319,9 @@ void size_fuzzing(){
     // test negative size
     start_header(&header);
     snprintf(header.size, sizeof(header.size), "%d", INT_MIN);
-    char end_data[END_BYTES];
-    memset(end_data, 0, END_BYTES);
-    create_tar(&header, content_header, content_header_size, end_data, END_BYTES);
+    char end_data[BLOCK_SIZE];
+    memset(end_data, 0, BLOCK_SIZE);
+    create_tar(&header, content_header, content_header_size, end_data, BLOCK_SIZE);
     if (extract(path_extractor) == 1)
         test_status.successful_with_negative_value++;
 
@@ -403,12 +405,11 @@ void chksum_fuzzing(){
 
     char content_header[] = "https://www.youtube.com/shorts/AcOQeKPX-Hs"; // dummy text
     int content_header_size = sizeof(content_header);
-    char end_data[END_BYTES];
+    char end_data[BLOCK_SIZE];
     start_header(&header);
     memset(&header.chksum, 0, 1);
-    create_tar(&header, content_header, content_header_size, end_data, END_BYTES);
+    create_tar(&header, content_header, content_header_size, end_data, BLOCK_SIZE);
     extract(path_extractor);
-
 
     update_checksum = 1;
     test_status.checksum_fuzzing_success += test_status.number_of_success - previous_success;
@@ -560,7 +561,7 @@ void gname_fuzzing(){
  */
 void end_of_file_fuzzing() {
 
-    printf("\n~~~ End of File Fuzzing ~~~\n");
+    printf("\n~~~ END OF FILE Fuzzing ~~~\n");
     int previous_success = test_status.number_of_success;
 
     int end_data_sizes[] = {0, 1, END_BYTES / 4, END_BYTES / 2 , END_BYTES - 1, END_BYTES, END_BYTES + 1, END_BYTES * 2, END_BYTES * 4};
@@ -585,7 +586,7 @@ void end_of_file_fuzzing() {
     }
 
     test_status.end_of_file_fuzzing_success += test_status.number_of_success - previous_success;
-    printf("\n~~~ End of File Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
+    printf("\n~~~ END OF FILE Fuzzing COMPLETED SUCCESSFULLY ~~~\n");
 }
 
 
