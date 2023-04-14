@@ -78,10 +78,10 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // Test 4 : Too short field
     srand(time(NULL));
     start_header(&header);
-    for (int i = 0; i < (int) field_size - 1; i++) { // Generate "field_size - 1" random letters 
+    for (int i = 0; i < (int) field_size - 2; i++) { // Generate "field_size - 1" random letters 
         field_name[i] = 'a' + rand() % 26;
     }
-    field_name[field_size] = 0;
+    field_name[field_size - 1] = 0;
     create_empty_tar(&header);
     if (extract(path_extractor) == 1) {
         test_status.successful_with_too_short_field++;
@@ -98,8 +98,8 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
 
     // Test 6 : Field cut in the middle
     start_header(&header);
-    memset(field_name, 0, field_size / 2);
-    memset(&field_name[field_size / 2], '1', field_size / 2);
+    memset(field_name, 0, field_size);
+    memset(field_name, '1', field_size / 2);
     create_empty_tar(&header);
     if (extract(path_extractor) == 1) {
         test_status.successful_with_field_cut_in_middle++;
@@ -114,6 +114,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     }
 
     // Test 8 : Null byte in the middle of the field (Part 1)
+    // Full of Null byte
     start_header(&header);
     memset(field_name, 0, field_size);
     create_empty_tar(&header);
@@ -124,8 +125,8 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     // Test 9 : Null byte in the middle of the field (Part 2)
     // Set the first half of field_name to contain null bytes and the second half to '0'
     start_header(&header);
-    memset(field_name, 0, field_size / 2);
-    memset(&field_name[field_size / 2], '0', field_size / 2);
+    memset(field_name, 0, field_size);
+    memset(field_name, '0', field_size / 2);
     create_empty_tar(&header);
     if (extract(path_extractor) == 1) {
         test_status.successful_with_null_byte_in_the_middle++;
@@ -142,7 +143,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     }
 
     // Test 11 : Null byte in the middle of the field (Part 4)
-    // Set all bytes of field_name to null except for the last byte which is set to '0'
+    // Set all bytes of field_name to null bytes except for the last byte which is set to '0'
     start_header(&header);
     memset(field_name, 0, field_size - 1);
     field_name[field_size - 1] = '0';
@@ -168,7 +169,7 @@ void fuzzing_on_precise_field(char* field_name, size_t field_size) {
     char special_chars[] = { '\"', '\'', ' ', '\t', '\r', '\n', '\v', '\f', '\b'};
     for (int i = 0; i < (int) sizeof(special_chars); i++) {
         start_header(&header);
-        memset(field_name, special_chars[i], field_size);
+        memset(field_name, special_chars[i], field_size - 1);
         field_name[field_size - 1] = 0;
         create_empty_tar(&header);
         if (extract(path_extractor) == 1) {
