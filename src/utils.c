@@ -197,18 +197,15 @@ void create_tar(tar_header* header, char* content_header, size_t content_header_
         fclose(fp);
         //exit(EXIT_FAILURE);
     }
-    if (content_header_size > 0)
-        if (fwrite(content_header, content_header_size, 1, fp) != 1) {
-            perror("Error writing content");
-            fclose(fp);
-            //exit(EXIT_FAILURE);
-        }
-    if (end_size > 0){
-        if (fwrite(end_data, end_size, 1, fp) != 1) {
-            perror("Error writing end bytes");
-            fclose(fp);
-            //exit(EXIT_FAILURE);
-        }
+    if (content_header_size > 0 && fwrite(content_header, content_header_size, 1, fp) != 1) {
+        perror("Error writing content");
+        fclose(fp);
+        //exit(EXIT_FAILURE);
+    }
+    if (end_size > 0 && fwrite(end_data, end_size, 1, fp) != 1) {
+        perror("Error writing end bytes");
+        fclose(fp);
+        //exit(EXIT_FAILURE);
     }
     if (fclose(fp) != 0) {
         perror("Error closing file");
