@@ -1,5 +1,11 @@
 # Fuzzer for tar
 
+## Grade : 20/20
+
+## Authors : Matricule (ULB)
+- Luyckx Marco : 496283
+- Vanmuysewinkel Vincent : 489399
+
 ## Deleted files
 
 To ensure that your files are not unintentionally deleted when testing our project with new files, please carefully review the comments provided in the `remove_files` function of the `main.c` file.
@@ -59,7 +65,3 @@ The functions in the file `help.c` that were provided were split into different 
 ## Useful links used
 - https://www.gnu.org/software/tar/manual/html_node/Standard.html
 - https://theasciicode.com.ar/
-
-## Authors : Matricule (ULB)
-- Luyckx Marco : 496283
-- Vanmuysewinkel Vincent : 489399
